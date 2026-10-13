@@ -1,0 +1,9 @@
+schema_version: 1
+equipment:
+- id: example-equipment
+  name: Synthetic example equipment
+  category: example
+  origin_country: XXX
+  sources:
+  - synthetic-fixture
+  as_of: '2026-01-01'

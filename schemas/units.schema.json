@@ -1,0 +1,290 @@
+{
+  "$defs": {
+    "EquipmentLink": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "format": "date",
+          "title": "As Of",
+          "type": "string"
+        },
+        "confidence": {
+          "enum": [
+            "confirmed",
+            "likely",
+            "reported"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "equipment": {
+          "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+          "title": "Equipment",
+          "type": "string"
+        },
+        "from": {
+          "format": "date",
+          "title": "From",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "To"
+        }
+      },
+      "required": [
+        "confidence",
+        "sources",
+        "as_of",
+        "from",
+        "equipment"
+      ],
+      "title": "EquipmentLink",
+      "type": "object"
+    },
+    "ExternalLink": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "url"
+      ],
+      "title": "ExternalLink",
+      "type": "object"
+    },
+    "GarrisonLink": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "format": "date",
+          "title": "As Of",
+          "type": "string"
+        },
+        "confidence": {
+          "enum": [
+            "confirmed",
+            "likely",
+            "reported"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "from": {
+          "format": "date",
+          "title": "From",
+          "type": "string"
+        },
+        "site": {
+          "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+          "title": "Site",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "To"
+        }
+      },
+      "required": [
+        "confidence",
+        "sources",
+        "as_of",
+        "from",
+        "site"
+      ],
+      "title": "GarrisonLink",
+      "type": "object"
+    },
+    "Unit": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "format": "date",
+          "title": "As Of",
+          "type": "string"
+        },
+        "branch": {
+          "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+          "title": "Branch",
+          "type": "string"
+        },
+        "country": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Country",
+          "type": "string"
+        },
+        "designation": {
+          "minLength": 1,
+          "title": "Designation",
+          "type": "string"
+        },
+        "echelon": {
+          "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+          "title": "Echelon",
+          "type": "string"
+        },
+        "equipment": {
+          "items": {
+            "$ref": "#/$defs/EquipmentLink"
+          },
+          "title": "Equipment",
+          "type": "array"
+        },
+        "garrisons": {
+          "items": {
+            "$ref": "#/$defs/GarrisonLink"
+          },
+          "title": "Garrisons",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/ExternalLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "name_local": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name Local"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent"
+        },
+        "sources": {
+          "items": {
+            "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "wikidata": {
+          "anyOf": [
+            {
+              "pattern": "^Q[1-9][0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wikidata"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "country",
+        "designation",
+        "branch",
+        "echelon",
+        "sources",
+        "as_of"
+      ],
+      "title": "Unit",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "units": {
+      "items": {
+        "$ref": "#/$defs/Unit"
+      },
+      "title": "Units",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "units"
+  ],
+  "title": "UnitsFile",
+  "type": "object"
+}

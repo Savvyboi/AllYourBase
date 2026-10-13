@@ -1,0 +1,27 @@
+schema_version: 1
+units:
+- id: xxx-example-unit
+  name: Synthetic example unit
+  country: XXX
+  designation: Example
+  branch: air_force
+  echelon: example
+  sources:
+  - synthetic-fixture
+  as_of: '2026-01-01'
+  garrisons:
+  - site: xxx-example-site
+    from: '2025-01-01'
+    to: null
+    as_of: '2026-01-01'
+    confidence: reported
+    sources:
+    - synthetic-fixture
+  equipment:
+  - equipment: example-equipment
+    from: '2025-01-01'
+    to: null
+    as_of: '2026-01-01'
+    confidence: reported
+    sources:
+    - synthetic-fixture

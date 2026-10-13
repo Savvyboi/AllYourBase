@@ -1,0 +1,118 @@
+{
+  "$defs": {
+    "Equipment": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "format": "date",
+          "title": "As Of",
+          "type": "string"
+        },
+        "category": {
+          "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+          "title": "Category",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/ExternalLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "origin_country": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Origin Country",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "wikidata": {
+          "anyOf": [
+            {
+              "pattern": "^Q[1-9][0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wikidata"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "category",
+        "origin_country",
+        "sources",
+        "as_of"
+      ],
+      "title": "Equipment",
+      "type": "object"
+    },
+    "ExternalLink": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "url"
+      ],
+      "title": "ExternalLink",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "equipment": {
+      "items": {
+        "$ref": "#/$defs/Equipment"
+      },
+      "title": "Equipment",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "equipment"
+  ],
+  "title": "EquipmentFile",
+  "type": "object"
+}

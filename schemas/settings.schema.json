@@ -1,0 +1,743 @@
+{
+  "$defs": {
+    "BaselineSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "min_observations": {
+          "exclusiveMinimum": 0,
+          "title": "Min Observations",
+          "type": "integer"
+        },
+        "previous_weeks": {
+          "exclusiveMinimum": 0,
+          "title": "Previous Weeks",
+          "type": "integer"
+        },
+        "seasonal_half_window_weeks": {
+          "minimum": 0,
+          "title": "Seasonal Half Window Weeks",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "previous_weeks",
+        "seasonal_half_window_weeks",
+        "min_observations"
+      ],
+      "title": "BaselineSettings",
+      "type": "object"
+    },
+    "BudgetSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "max_parallel_radar_requests": {
+          "exclusiveMinimum": 0,
+          "title": "Max Parallel Radar Requests",
+          "type": "integer"
+        },
+        "monthly_processing_units": {
+          "exclusiveMinimum": 0,
+          "title": "Monthly Processing Units",
+          "type": "integer"
+        },
+        "published_file_max_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Published File Max Bytes",
+          "type": "integer"
+        },
+        "published_site_max_mb": {
+          "exclusiveMinimum": 0,
+          "title": "Published Site Max Mb",
+          "type": "integer"
+        },
+        "stop_optional_at_fraction": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Stop Optional At Fraction",
+          "type": "number"
+        }
+      },
+      "required": [
+        "monthly_processing_units",
+        "stop_optional_at_fraction",
+        "max_parallel_radar_requests",
+        "published_site_max_mb",
+        "published_file_max_bytes"
+      ],
+      "title": "BudgetSettings",
+      "type": "object"
+    },
+    "ImageSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "attribution_template": {
+          "minLength": 1,
+          "title": "Attribution Template",
+          "type": "string"
+        },
+        "margin_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Margin Fraction",
+          "type": "number"
+        },
+        "max_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Bytes",
+          "type": "integer"
+        },
+        "max_size_px": {
+          "exclusiveMinimum": 0,
+          "title": "Max Size Px",
+          "type": "integer"
+        },
+        "size_px": {
+          "exclusiveMinimum": 0,
+          "title": "Size Px",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "size_px",
+        "max_size_px",
+        "max_bytes",
+        "margin_fraction",
+        "attribution_template"
+      ],
+      "title": "ImageSettings",
+      "type": "object"
+    },
+    "IndicatorSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "mad_floor": {
+          "exclusiveMinimum": 0,
+          "title": "Mad Floor",
+          "type": "number"
+        },
+        "parameters": {
+          "patternProperties": {
+            "^[a-z0-9]+(?:[_-][a-z0-9]+)*$": {
+              "type": "number"
+            }
+          },
+          "title": "Parameters",
+          "type": "object"
+        },
+        "sensor": {
+          "enum": [
+            "s1",
+            "s2",
+            "both"
+          ],
+          "title": "Sensor",
+          "type": "string"
+        },
+        "zones": {
+          "items": {
+            "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Zones",
+          "type": "array"
+        }
+      },
+      "required": [
+        "sensor",
+        "zones",
+        "parameters",
+        "mad_floor"
+      ],
+      "title": "IndicatorSettings",
+      "type": "object"
+    },
+    "MatchingSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "airfield_distance_km": {
+          "exclusiveMinimum": 0,
+          "title": "Airfield Distance Km",
+          "type": "number"
+        },
+        "garrison_candidate_radius_km": {
+          "exclusiveMinimum": 0,
+          "title": "Garrison Candidate Radius Km",
+          "type": "number"
+        },
+        "name_similarity": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Name Similarity",
+          "type": "number"
+        },
+        "stale_link_months": {
+          "exclusiveMinimum": 0,
+          "title": "Stale Link Months",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "airfield_distance_km",
+        "name_similarity",
+        "garrison_candidate_radius_km",
+        "stale_link_months"
+      ],
+      "title": "MatchingSettings",
+      "type": "object"
+    },
+    "PreprocessSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "cloud_dilation_px": {
+          "minimum": 0,
+          "title": "Cloud Dilation Px",
+          "type": "integer"
+        },
+        "max_alignment_shift_px": {
+          "minimum": 0,
+          "title": "Max Alignment Shift Px",
+          "type": "number"
+        },
+        "min_valid_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Min Valid Fraction",
+          "type": "number"
+        },
+        "north_polar_above": {
+          "maximum": 90,
+          "minimum": 0,
+          "title": "North Polar Above",
+          "type": "number"
+        },
+        "optical_bands": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Optical Bands",
+          "type": "array"
+        },
+        "radar": {
+          "$ref": "#/$defs/RadarProcessingSettings"
+        },
+        "resolution_m": {
+          "exclusiveMinimum": 0,
+          "title": "Resolution M",
+          "type": "integer"
+        },
+        "scl_keep": {
+          "items": {
+            "maximum": 11,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "title": "Scl Keep",
+          "type": "array"
+        },
+        "south_polar_below": {
+          "maximum": 0,
+          "minimum": -90,
+          "title": "South Polar Below",
+          "type": "number"
+        }
+      },
+      "required": [
+        "resolution_m",
+        "north_polar_above",
+        "south_polar_below",
+        "optical_bands",
+        "scl_keep",
+        "cloud_dilation_px",
+        "min_valid_fraction",
+        "max_alignment_shift_px",
+        "radar"
+      ],
+      "title": "PreprocessSettings",
+      "type": "object"
+    },
+    "Provider": {
+      "additionalProperties": false,
+      "properties": {
+        "catalogue_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Catalogue Url",
+          "type": "string"
+        },
+        "client_id_env": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Client Id Env"
+        },
+        "client_secret_env": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Client Secret Env"
+        },
+        "collection": {
+          "minLength": 1,
+          "title": "Collection",
+          "type": "string"
+        },
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "stac",
+            "sentinelhub"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "process_url": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "maxLength": 2083,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Process Url"
+        },
+        "token_url": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "maxLength": 2083,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Token Url"
+        }
+      },
+      "required": [
+        "kind",
+        "catalogue_url",
+        "collection",
+        "enabled"
+      ],
+      "title": "Provider",
+      "type": "object"
+    },
+    "ProviderSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "fallbacks": {
+          "items": {
+            "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Fallbacks",
+          "type": "array"
+        },
+        "primary": {
+          "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+          "title": "Primary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary",
+        "fallbacks"
+      ],
+      "title": "ProviderSelection",
+      "type": "object"
+    },
+    "ProvidersSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "definitions": {
+          "patternProperties": {
+            "^[a-z0-9]+(?:[_-][a-z0-9]+)*$": {
+              "$ref": "#/$defs/Provider"
+            }
+          },
+          "title": "Definitions",
+          "type": "object"
+        },
+        "optical": {
+          "$ref": "#/$defs/ProviderSelection"
+        },
+        "radar": {
+          "$ref": "#/$defs/ProviderSelection"
+        }
+      },
+      "required": [
+        "optical",
+        "radar",
+        "definitions"
+      ],
+      "title": "ProvidersSettings",
+      "type": "object"
+    },
+    "PublishSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_extensions": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Allowed Extensions",
+          "type": "array"
+        },
+        "branch": {
+          "minLength": 1,
+          "title": "Branch",
+          "type": "string"
+        },
+        "delay_days": {
+          "minimum": 0,
+          "title": "Delay Days",
+          "type": "integer"
+        },
+        "policy": {
+          "enum": [
+            "reviewed_only",
+            "all_flagged"
+          ],
+          "title": "Policy",
+          "type": "string"
+        },
+        "recent_activity_weeks": {
+          "exclusiveMinimum": 0,
+          "title": "Recent Activity Weeks",
+          "type": "integer"
+        },
+        "site_repository": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Site Repository"
+        },
+        "stale_after_days": {
+          "exclusiveMinimum": 0,
+          "title": "Stale After Days",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "policy",
+        "delay_days",
+        "recent_activity_weeks",
+        "stale_after_days",
+        "allowed_extensions",
+        "site_repository",
+        "branch"
+      ],
+      "title": "PublishSettings",
+      "type": "object"
+    },
+    "RadarProcessingSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "auxiliary_bands": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Auxiliary Bands",
+          "type": "array"
+        },
+        "backscatter_coefficient": {
+          "const": "GAMMA0_TERRAIN",
+          "title": "Backscatter Coefficient",
+          "type": "string"
+        },
+        "dem": {
+          "const": "COPERNICUS_30",
+          "title": "Dem",
+          "type": "string"
+        },
+        "orthorectify": {
+          "const": true,
+          "title": "Orthorectify",
+          "type": "boolean"
+        },
+        "polarisation_pairs": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Polarisation Pairs",
+          "type": "array"
+        },
+        "resolution": {
+          "const": "HIGH",
+          "title": "Resolution",
+          "type": "string"
+        }
+      },
+      "required": [
+        "backscatter_coefficient",
+        "orthorectify",
+        "dem",
+        "resolution",
+        "polarisation_pairs",
+        "auxiliary_bands"
+      ],
+      "title": "RadarProcessingSettings",
+      "type": "object"
+    },
+    "RuntimeSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "home_env": {
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Home Env",
+          "type": "string"
+        },
+        "legacy_home_env": {
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Legacy Home Env",
+          "type": "string"
+        },
+        "profile": {
+          "enum": [
+            "local",
+            "colab"
+          ],
+          "title": "Profile",
+          "type": "string"
+        },
+        "workers": {
+          "exclusiveMinimum": 0,
+          "title": "Workers",
+          "type": "integer"
+        },
+        "workspace": {
+          "minLength": 1,
+          "title": "Workspace",
+          "type": "string"
+        }
+      },
+      "required": [
+        "profile",
+        "workspace",
+        "workers",
+        "home_env",
+        "legacy_home_env"
+      ],
+      "title": "RuntimeSettings",
+      "type": "object"
+    },
+    "ScheduleSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "default_start_week": {
+          "pattern": "^\\d{4}-W\\d{2}$",
+          "title": "Default Start Week",
+          "type": "string"
+        },
+        "late_scene_recheck_weeks": {
+          "minimum": 0,
+          "title": "Late Scene Recheck Weeks",
+          "type": "integer"
+        },
+        "retry_attempts": {
+          "exclusiveMinimum": 0,
+          "title": "Retry Attempts",
+          "type": "integer"
+        },
+        "week_timezone": {
+          "const": "UTC",
+          "title": "Week Timezone",
+          "type": "string"
+        }
+      },
+      "required": [
+        "late_scene_recheck_weeks",
+        "retry_attempts",
+        "week_timezone",
+        "default_start_week"
+      ],
+      "title": "ScheduleSettings",
+      "type": "object"
+    },
+    "ScoreSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence_min_looks": {
+          "exclusiveMinimum": 0,
+          "title": "Confidence Min Looks",
+          "type": "integer"
+        },
+        "confidence_min_valid_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence Min Valid Fraction",
+          "type": "number"
+        },
+        "corroboration_required": {
+          "const": true,
+          "title": "Corroboration Required",
+          "type": "boolean"
+        },
+        "elevated_pair_z": {
+          "exclusiveMinimum": 0,
+          "title": "Elevated Pair Z",
+          "type": "number"
+        },
+        "elevated_primary_z": {
+          "exclusiveMinimum": 0,
+          "title": "Elevated Primary Z",
+          "type": "number"
+        },
+        "high_primary_z": {
+          "exclusiveMinimum": 0,
+          "title": "High Primary Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "elevated_primary_z",
+        "elevated_pair_z",
+        "high_primary_z",
+        "corroboration_required",
+        "confidence_min_looks",
+        "confidence_min_valid_fraction"
+      ],
+      "title": "ScoreSettings",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "baseline": {
+      "$ref": "#/$defs/BaselineSettings"
+    },
+    "budgets": {
+      "$ref": "#/$defs/BudgetSettings"
+    },
+    "images": {
+      "$ref": "#/$defs/ImageSettings"
+    },
+    "indicators": {
+      "patternProperties": {
+        "^[a-z0-9]+(?:[_-][a-z0-9]+)*$": {
+          "$ref": "#/$defs/IndicatorSettings"
+        }
+      },
+      "title": "Indicators",
+      "type": "object"
+    },
+    "matching": {
+      "$ref": "#/$defs/MatchingSettings"
+    },
+    "preprocessing": {
+      "$ref": "#/$defs/PreprocessSettings"
+    },
+    "primary_indicators": {
+      "patternProperties": {
+        "^[a-z0-9]+(?:[_-][a-z0-9]+)*$": {
+          "items": {
+            "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "title": "Primary Indicators",
+      "type": "object"
+    },
+    "project_name": {
+      "minLength": 1,
+      "title": "Project Name",
+      "type": "string"
+    },
+    "providers": {
+      "$ref": "#/$defs/ProvidersSettings"
+    },
+    "publish": {
+      "$ref": "#/$defs/PublishSettings"
+    },
+    "runtime": {
+      "$ref": "#/$defs/RuntimeSettings"
+    },
+    "schedule": {
+      "$ref": "#/$defs/ScheduleSettings"
+    },
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "scoring": {
+      "$ref": "#/$defs/ScoreSettings"
+    },
+    "zone_types": {
+      "items": {
+        "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Zone Types",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "project_name",
+    "runtime",
+    "providers",
+    "preprocessing",
+    "schedule",
+    "indicators",
+    "zone_types",
+    "primary_indicators",
+    "baseline",
+    "scoring",
+    "budgets",
+    "images",
+    "publish",
+    "matching"
+  ],
+  "title": "Settings",
+  "type": "object"
+}
