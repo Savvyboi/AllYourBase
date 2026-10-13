@@ -105,8 +105,10 @@ decisions before Phase 7.
 
 ## Structure and next steps
 
-See `docs/phase-0.md` for completed acceptance criteria, `docs/phase-1.md` for
-the access spike and remaining acceptance work, and `docs/adr/` for design decisions.
+See the [active build plan](docs/build-plan.md), [updated Word plan](docs/build-plan.docx)
+and [AGENTS.md](AGENTS.md) for completed work, remaining acceptance checks and the
+phase-by-phase roadmap. [Phase 0](docs/phase-0.md), [Phase 1](docs/phase-1.md) and
+[ADRs](docs/adr/) contain the milestone evidence and design decisions.
 The `site/` folder is reserved for Hugo and is not a deployed website.
 
 The code follows [Pydantic's model contracts](https://docs.pydantic.dev/latest/concepts/models/)
