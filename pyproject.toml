@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "allyourbase"
+version = "0.1.0"
+description = "Local, review-first Sentinel monitoring with a sourced geospatial catalogue"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "pydantic>=2.10,<3",
+  "PyYAML>=6.0.2,<7",
+  "shapely>=2.0,<3",
+  "typer>=0.15,<1",
+]
+
+[project.scripts]
+allyourbase = "allyourbase.cli:app"
+basewatch = "allyourbase.cli:app"
+
+[project.optional-dependencies]
+imagery = [
+  "pystac-client>=0.8,<1", "odc-stac>=0.3,<1", "rasterio>=1.4,<2",
+  "rioxarray>=0.18,<1", "xarray>=2024.10", "numpy>=2,<3", "scipy>=1.14,<2",
+  "scikit-image>=0.24,<1", "geopandas>=1,<2", "sentinelhub>=3.11,<4",
+  "Pillow>=11,<13", "duckdb>=1.1,<2", "keyring>=25,<27",
+]
+review = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1"]
+ingestion = ["SPARQLWrapper>=2,<3", "pdfplumber>=0.11,<1", "rapidfuzz>=3,<4"]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3,<10", "hypothesis>=6.120,<7", "ruff>=0.9,<1",
+  "mypy>=1.14,<2", "pre-commit>=4,<5", "types-PyYAML>=6.0",
+  "jsonschema>=4.23,<5", "types-jsonschema>=4.23",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/allyourbase"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["shapely", "shapely.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+

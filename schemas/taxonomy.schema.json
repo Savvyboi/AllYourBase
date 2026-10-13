@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "TaxonomyFacet": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "terms": {
+          "items": {
+            "$ref": "#/$defs/TaxonomyTerm"
+          },
+          "title": "Terms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "terms"
+      ],
+      "title": "TaxonomyFacet",
+      "type": "object"
+    },
+    "TaxonomyTerm": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Labels",
+          "type": "object"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "TaxonomyTerm",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "facets": {
+      "patternProperties": {
+        "^[a-z0-9]+(?:[_-][a-z0-9]+)*$": {
+          "$ref": "#/$defs/TaxonomyFacet"
+        }
+      },
+      "title": "Facets",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "facets"
+  ],
+  "title": "TaxonomyFile",
+  "type": "object"
+}

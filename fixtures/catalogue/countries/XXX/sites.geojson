@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              0
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "xxx-example-site",
+        "name": "Synthetic example facility",
+        "name_local": "Пример · مثال · 示例",
+        "country": "XXX",
+        "site_type": "airbase",
+        "status": "active",
+        "sources": [
+          "synthetic-fixture"
+        ],
+        "as_of": "2026-01-01",
+        "zones": [
+          {
+            "id": "apron_main",
+            "zone_type": "apron",
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.2,
+                    0.2
+                  ],
+                  [
+                    0.4,
+                    0.2
+                  ],
+                  [
+                    0.4,
+                    0.4
+                  ],
+                  [
+                    0.2,
+                    0.4
+                  ],
+                  [
+                    0.2,
+                    0.2
+                  ]
+                ]
+              ]
+            },
+            "sources": [
+              "synthetic-fixture"
+            ]
+          }
+        ],
+        "tags": {
+          "role": [
+            "transport"
+          ]
+        },
+        "sensors": "both"
+      }
+    }
+  ]
+}

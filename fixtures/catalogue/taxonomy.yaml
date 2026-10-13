@@ -1,0 +1,116 @@
+schema_version: 1
+facets:
+  country:
+    label: Country
+    terms:
+    - id: xxx
+      label: Fictional country
+  region:
+    label: Region
+    terms: []
+  site_type:
+    label: Site type
+    terms:
+    - id: airbase
+      label: Airbase
+    - id: naval_base
+      label: Naval base
+    - id: port
+      label: Port
+    - id: garrison
+      label: Garrison
+    - id: depot
+      label: Depot
+    - id: training_area
+      label: Training area
+    - id: missile_site
+      label: Missile site
+    - id: radar_site
+      label: Radar site
+  branch:
+    label: Branch
+    terms:
+    - id: air_force
+      label: Air force
+    - id: navy
+      label: Navy
+    - id: army
+      label: Army
+    - id: marines
+      label: Marines
+    - id: strategic_forces
+      label: Strategic forces
+    - id: coast_guard
+      label: Coast guard
+  role:
+    label: Role
+    terms:
+    - id: strategic_aviation
+      label: Strategic aviation
+    - id: fighter
+      label: Fighter
+    - id: transport
+      label: Transport
+    - id: submarine
+      label: Submarine
+    - id: surface_fleet
+      label: Surface fleet
+    - id: armour
+      label: Armour
+    - id: artillery
+      label: Artillery
+    - id: air_defence
+      label: Air defence
+    - id: logistics
+      label: Logistics
+  unit:
+    label: Unit
+    terms:
+    - id: xxx-example-unit
+      label: Synthetic example unit
+  equipment:
+    label: Equipment
+    terms:
+    - id: example-equipment
+      label: Synthetic example equipment
+  activity:
+    label: Activity
+    terms:
+    - id: aircraft_increase
+      label: Aircraft presence increased
+    - id: aircraft_decrease
+      label: Aircraft presence decreased
+    - id: vehicle_concentration
+      label: Vehicle concentration
+    - id: vehicles_departed
+      label: Vehicle presence decreased
+    - id: ships_sortied
+      label: Ship presence decreased
+    - id: ships_returned
+      label: Ship presence increased
+    - id: ground_works
+      label: Ground works
+    - id: construction
+      label: Construction
+    - id: fire_or_damage
+      label: Fire or damage
+  status:
+    label: Status
+    terms:
+    - id: active
+      label: Active
+    - id: reduced
+      label: Reduced
+    - id: inactive
+      label: Inactive
+    - id: under_construction
+      label: Under construction
+  data:
+    label: Data availability
+    terms:
+    - id: radar_only
+      label: Radar only
+    - id: polar_night
+      label: Polar night
+    - id: frequent_cloud
+      label: Frequent cloud

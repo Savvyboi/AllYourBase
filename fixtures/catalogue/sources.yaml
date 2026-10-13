@@ -1,0 +1,10 @@
+schema_version: 1
+sources:
+- id: synthetic-fixture
+  title: Fictional fixture, not a factual source
+  url: https://example.invalid/fixture
+  publisher: AllYourBase test suite
+  accessed: '2026-01-01'
+  reuse_class: manual
+  licence: Test data only
+  attribution: Synthetic test data; no real site, unit or equipment claims

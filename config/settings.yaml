@@ -1,0 +1,157 @@
+schema_version: 1
+project_name: AllYourBase
+runtime:
+  profile: local
+  workspace: ~/allyourbase-data
+  workers: 4
+  home_env: ALLYOURBASE_HOME
+  legacy_home_env: BASEWATCH_HOME
+
+# Provisional provider selection from the plan; Phase 1 measures access/coverage.
+# Credential VALUES must never be put here.
+providers:
+  optical:
+    primary: earth_search
+    fallbacks: [cdse_stac]
+  radar:
+    primary: cdse_sentinelhub
+    fallbacks: [planetary_computer]
+  definitions:
+    earth_search:
+      kind: stac
+      catalogue_url: https://earth-search.aws.element84.com/v1
+      collection: sentinel-2-c1-l2a
+      enabled: true
+    cdse_stac:
+      kind: stac
+      catalogue_url: https://stac.dataspace.copernicus.eu/v1
+      collection: sentinel-2-l2a
+      enabled: true
+    cdse_sentinelhub:
+      kind: sentinelhub
+      catalogue_url: https://sh.dataspace.copernicus.eu/api/v1/catalog/1.0.0
+      collection: sentinel-1-grd
+      process_url: https://sh.dataspace.copernicus.eu/api/v1/process
+      token_url: https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token
+      client_id_env: CDSE_CLIENT_ID
+      client_secret_env: CDSE_CLIENT_SECRET
+      enabled: true
+    planetary_computer:
+      kind: stac
+      catalogue_url: https://planetarycomputer.microsoft.com/api/stac/v1
+      collection: sentinel-1-rtc
+      enabled: false # Coverage and asset signing have not been tested.
+
+preprocessing:
+  resolution_m: 10
+  north_polar_above: 84
+  south_polar_below: -80
+  optical_bands: [B02, B03, B04, B08, B11, B12, SCL]
+  scl_keep: [4, 5, 6, 7, 11]
+  cloud_dilation_px: 2
+  min_valid_fraction: 0.6
+  max_alignment_shift_px: 0.5
+  radar:
+    backscatter_coefficient: GAMMA0_TERRAIN
+    orthorectify: true
+    dem: COPERNICUS_30
+    resolution: HIGH
+    polarisation_pairs: [[VV, VH], [HH, HV]]
+    auxiliary_bands: [shadowMask, dataMask]
+
+schedule:
+  late_scene_recheck_weeks: 2
+  retry_attempts: 3
+  week_timezone: UTC
+  default_start_week: 2024-W01
+
+zone_types: [apron, vehicle_park, pier, anchorage, rail_siding, field, storage]
+indicators:
+  s1_bright_targets:
+    sensor: s1
+    zones: [apron, vehicle_park, rail_siding]
+    parameters: {background_window_px: 21, guard_window_px: 5, sigma: 3, min_component_px: 2}
+    mad_floor: 1 # Provisional units: component count; calibrate before scoring.
+  s1_ship_occupancy:
+    sensor: s1
+    zones: [pier, anchorage]
+    parameters: {background_window_px: 21, guard_window_px: 5, sigma: 3, min_component_px: 4}
+    mad_floor: 1
+  s1_backscatter_change:
+    sensor: s1
+    zones: [all]
+    parameters: {previous_looks: 6, threshold_db: 3}
+    mad_floor: 0.01 # Provisional units: changed pixel fraction.
+  s2_blob_anomaly:
+    sensor: s2
+    zones: [apron]
+    parameters: {previous_clear_looks: 8, min_component_px: 6, departure_mad: 3}
+    mad_floor: 1
+  s2_ground_disturbance:
+    sensor: s2
+    zones: [field]
+    parameters: {ndvi_drop: -0.15}
+    mad_floor: 0.01 # Provisional units: hectares.
+  s2_snow_tracks:
+    sensor: s2
+    zones: [field, vehicle_park]
+    parameters: {} # NDSI threshold needs a Phase 3 decision and validation.
+    mad_floor: 0.01
+  s2_fire_burn:
+    sensor: s2
+    zones: [all]
+    parameters: {nbr_drop: 0.2}
+    mad_floor: 0.01
+  persistent_change:
+    sensor: both
+    zones: [all]
+    parameters: {consecutive_weeks: 2}
+    mad_floor: 1
+
+primary_indicators:
+  airbase: [s1_bright_targets, s2_blob_anomaly]
+  naval_base: [s1_ship_occupancy]
+  port: [s1_ship_occupancy]
+  garrison: [s1_bright_targets, s2_ground_disturbance]
+  training_area: [s1_bright_targets, s2_ground_disturbance]
+  depot: [s2_fire_burn, s1_backscatter_change]
+  missile_site: [s1_backscatter_change, s2_ground_disturbance]
+  radar_site: [s1_backscatter_change, s2_ground_disturbance]
+
+baseline:
+  previous_weeks: 12
+  seasonal_half_window_weeks: 3
+  min_observations: 6
+scoring:
+  elevated_primary_z: 2
+  elevated_pair_z: 1.5
+  high_primary_z: 3
+  corroboration_required: true
+  confidence_min_looks: 2
+  confidence_min_valid_fraction: 0.8
+budgets:
+  monthly_processing_units: 10000 # Plan estimate; verify current CDSE allowance in Phase 1.
+  stop_optional_at_fraction: 0.8
+  max_parallel_radar_requests: 1
+  published_site_max_mb: 800
+  published_file_max_bytes: 1000000
+images:
+  size_px: 256
+  max_size_px: 320
+  max_bytes: 40000
+  margin_fraction: 0.3
+  attribution_template: "Contains modified Copernicus Sentinel data {year} · AllYourBase"
+publish:
+  policy: reviewed_only
+  delay_days: 0 # Provisional; owner chooses before the publish milestone.
+  recent_activity_weeks: 12
+  stale_after_days: 9
+  allowed_extensions: [.html, .css, .js, .json, .csv, .webp, .svg, .woff, .woff2, .xml, .txt]
+  site_repository: null
+  branch: gh-pages
+matching:
+  airfield_distance_km: 3
+  name_similarity: 0.85
+  garrison_candidate_radius_km: 30
+  stale_link_months: 12
+
