@@ -84,4 +84,4 @@ def test_cli_configuration_error_redacts_inputs(root: Path, tmp_path: Path) -> N
 def test_version() -> None:
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0, result.output
-    assert "0.1.0" in result.stdout
+    assert "0.2.0" in result.stdout

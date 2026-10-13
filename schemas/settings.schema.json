@@ -1,5 +1,112 @@
 {
   "$defs": {
+    "AccessSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "http_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Http Timeout Seconds",
+          "type": "number"
+        },
+        "keyring_service": {
+          "minLength": 1,
+          "title": "Keyring Service",
+          "type": "string"
+        },
+        "lookback_weeks": {
+          "exclusiveMinimum": 0,
+          "title": "Lookback Weeks",
+          "type": "integer"
+        },
+        "max_metadata_response_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Metadata Response Bytes",
+          "type": "integer"
+        },
+        "max_process_dimension_px": {
+          "exclusiveMinimum": 0,
+          "title": "Max Process Dimension Px",
+          "type": "integer"
+        },
+        "max_process_response_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Process Response Bytes",
+          "type": "integer"
+        },
+        "max_retry_delay_seconds": {
+          "minimum": 0,
+          "title": "Max Retry Delay Seconds",
+          "type": "number"
+        },
+        "max_window_pixels": {
+          "exclusiveMinimum": 0,
+          "title": "Max Window Pixels",
+          "type": "integer"
+        },
+        "optical_max_scene_cloud_percent": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Optical Max Scene Cloud Percent",
+          "type": "number"
+        },
+        "processing_units_header": {
+          "minLength": 1,
+          "title": "Processing Units Header",
+          "type": "string"
+        },
+        "radar_request_reservation_pu": {
+          "exclusiveMinimum": 0,
+          "title": "Radar Request Reservation Pu",
+          "type": "number"
+        },
+        "radar_time_margin_seconds": {
+          "minimum": 0,
+          "title": "Radar Time Margin Seconds",
+          "type": "integer"
+        },
+        "retry_base_seconds": {
+          "minimum": 0,
+          "title": "Retry Base Seconds",
+          "type": "number"
+        },
+        "stac_max_pages": {
+          "exclusiveMinimum": 0,
+          "title": "Stac Max Pages",
+          "type": "integer"
+        },
+        "stac_page_size": {
+          "exclusiveMinimum": 0,
+          "title": "Stac Page Size",
+          "type": "integer"
+        },
+        "token_refresh_fraction": {
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Token Refresh Fraction",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lookback_weeks",
+        "http_timeout_seconds",
+        "retry_base_seconds",
+        "max_retry_delay_seconds",
+        "stac_page_size",
+        "stac_max_pages",
+        "optical_max_scene_cloud_percent",
+        "max_window_pixels",
+        "max_process_response_bytes",
+        "max_metadata_response_bytes",
+        "max_process_dimension_px",
+        "radar_time_margin_seconds",
+        "processing_units_header",
+        "radar_request_reservation_pu",
+        "keyring_service",
+        "token_refresh_fraction"
+      ],
+      "title": "AccessSettings",
+      "type": "object"
+    },
     "BaselineSettings": {
       "additionalProperties": false,
       "properties": {
@@ -260,6 +367,19 @@
     "Provider": {
       "additionalProperties": false,
       "properties": {
+        "band_assets": {
+          "patternProperties": {
+            "^[a-z0-9]+(?:[_-][a-z0-9]+)*$": {
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "title": "Band Assets",
+          "type": "object"
+        },
         "catalogue_url": {
           "format": "uri",
           "maxLength": 2083,
@@ -310,6 +430,14 @@
           "title": "Kind",
           "type": "string"
         },
+        "native_spacing_by_mode": {
+          "additionalProperties": {
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "title": "Native Spacing By Mode",
+          "type": "object"
+        },
         "process_url": {
           "anyOf": [
             {
@@ -324,6 +452,55 @@
           ],
           "default": null,
           "title": "Process Url"
+        },
+        "s3_access_key_env": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "S3 Access Key Env"
+        },
+        "s3_endpoint": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "maxLength": 2083,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "S3 Endpoint"
+        },
+        "s3_secret_key_env": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "S3 Secret Key Env"
+        },
+        "sensor": {
+          "enum": [
+            "s1",
+            "s2"
+          ],
+          "title": "Sensor",
+          "type": "string"
         },
         "token_url": {
           "anyOf": [
@@ -343,6 +520,7 @@
       },
       "required": [
         "kind",
+        "sensor",
         "catalogue_url",
         "collection",
         "enabled"
@@ -648,6 +826,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "access": {
+      "$ref": "#/$defs/AccessSettings"
+    },
     "baseline": {
       "$ref": "#/$defs/BaselineSettings"
     },
@@ -736,7 +917,8 @@
     "budgets",
     "images",
     "publish",
-    "matching"
+    "matching",
+    "access"
   ],
   "title": "Settings",
   "type": "object"

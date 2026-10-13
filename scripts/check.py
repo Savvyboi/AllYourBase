@@ -6,7 +6,7 @@ COMMANDS = [
     ["uv", "run", "ruff", "check", "."],
     ["uv", "run", "ruff", "format", "--check", "."],
     ["uv", "run", "mypy", "src", "tests"],
-    ["uv", "run", "pytest"],
+    ["uv", "run", "--extra", "access", "pytest"],
     ["uv", "run", "allyourbase", "config", "check"],
     ["uv", "run", "allyourbase", "catalogue", "check"],
     ["uv", "run", "allyourbase", "schemas", "check"],
