@@ -211,3 +211,19 @@ def test_requested_pixels_with_no_acquisitions_are_an_explicit_failure(
         )
     report = json.loads((output / "report.json").read_text())
     assert report["failures"][0]["status"] == "no_eligible_acquisitions"
+
+
+@pytest.mark.parametrize("configured", [False, True])
+def test_doctor_reports_s3_pixel_readiness_without_values(
+    root: Path, monkeypatch: pytest.MonkeyPatch, configured: bool
+) -> None:
+    for name in ("CDSE_S3_ACCESS_KEY_ID", "CDSE_S3_SECRET_ACCESS_KEY"):
+        monkeypatch.delenv(name, raising=False)
+        if configured:
+            monkeypatch.setenv(name, "synthetic-private-value")
+    result = runner.invoke(app, ["--root", str(root), "providers", "doctor"])
+    assert result.exit_code == 0
+    row = next(row for row in json.loads(result.stdout) if row["provider"] == "cdse_stac")
+    assert row["credentials"] == "not_required"
+    assert row["pixel_credentials"] == ("configured" if configured else "missing")
+    assert "synthetic-private-value" not in result.stdout

@@ -5,7 +5,9 @@ monitoring with Sentinel-1 and Sentinel-2. Phase 0 is complete. This version add
 the **Phase 1 provider-access spike**: discovery, optical window reads, radar
 requests and local usage reports. Eight-week discovery, optical/radar reads and
 measured radar costs now pass for three owner-approved Russian airbase test areas.
-CDSE optical fallback reads still need separate S3 credentials. Indicators,
+CDSE optical fallback now passes in Google Colab: all 21 band files were
+independently revalidated. Colab is the selected processing runtime; see the
+[validated access notebook](notebooks/README.md). Indicators,
 scoring, review UI and the Hugo website remain future milestones.
 
 Code repository: [Savvyboi/AllYourBase](https://github.com/Savvyboi/AllYourBase).
@@ -49,9 +51,12 @@ Git metadata and the virtual environment are omitted from the source archive.
 - `run --plan` and `backfill --plan` print a work plan without accessing a provider,
   creating a database or marking any week complete.
 - Ruff, strict mypy, pytest/Hypothesis and pre-commit configuration.
-- `providers doctor` checks readiness; `--online` checks collection access.
+- `providers doctor` checks metadata and S3 pixel-credential readiness separately;
+  `--online` checks collection access.
 - `providers spike` writes acquisition, window-read, failure and usage reports
   to the external local workspace. Pixel reads are explicit options.
+- `providers validate-optical` verifies existing optical band files and provenance
+  without making network requests.
 
 The catalogue is intentionally empty. Synthetic examples live only in `fixtures/`
 and are labelled fictional. Add reviewed, cited records under
@@ -82,8 +87,8 @@ implementation milestones. Their help screens describe that limitation.
 `config/settings.yaml` holds all thresholds, provider definitions, budgets and
 publishing settings. Primary-provider access and radar request costs have been
 measured for the Russian pilot; see `docs/phase-1-live-validation.md`. Numerical
-analysis thresholds, account quota assumptions and fallback pixel access remain
-provisional. These measurements do not establish global coverage.
+analysis thresholds and account quota assumptions remain provisional. CDSE
+optical fallback is verified for the three approved pilot areas. These measurements do not establish global coverage.
 
 `ALLYOURBASE_HOME` overrides the configured workspace; legacy `BASEWATCH_HOME`
 is also supported. When both are set, `ALLYOURBASE_HOME` wins. The default is

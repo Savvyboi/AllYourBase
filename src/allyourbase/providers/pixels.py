@@ -27,7 +27,9 @@ def _environment(provider: Provider, href: str) -> dict[str, Any]:
     import boto3
     from rasterio.session import AWSSession
 
-    session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    session = boto3.Session(
+        aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name="default"
+    )
     return {
         "session": AWSSession(session),
         "AWS_S3_ENDPOINT": urlsplit(str(provider.s3_endpoint)).netloc,

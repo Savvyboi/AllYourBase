@@ -3,8 +3,8 @@
 Phase 0 is merged. This branch implements provider access and offline verification.
 **Primary access passes for the Russian pilot:** the owner approved three airbase
 test windows on 2026-10-14. Eight-week discovery, Earth Search optical windows and
-CDSE radar windows now pass. CDSE optical fallback pixels still need separate S3
-credentials. See `docs/phase-1-live-validation.md` for measured evidence. No activity is scored.
+CDSE radar windows now pass. CDSE optical fallback also passes from Google Colab,
+with 21 band TIFFs independently verified locally. See `docs/phase-1-live-validation.md` for measured evidence. No activity is scored.
 
 ## Inputs needed
 
@@ -72,12 +72,12 @@ dimensions, and contain four FLOAT32 bands and valid pixels. Missing credentials
 empty searches and failed providers have distinct statuses. Provider failures do
 not erase other results; a spike with access failures exits with code 1.
 
-## Readiness and local commands
+## Readiness and runtime commands
 
 | Provider | Access | Checked here |
 | --- | --- | --- |
 | Earth Search | Anonymous metadata and COG pixels | Eight-week discovery and seven-band windows pass at all three sites |
-| CDSE STAC | Anonymous metadata; separate S3 keys for private S3 assets | Eight-week discovery passes; pixels report `s3_credentials_missing` |
+| CDSE STAC | Anonymous metadata; separate S3 keys for private S3 assets | Eight-week discovery and seven-band windows pass at all three sites from Colab |
 | CDSE Sentinel Hub | OAuth Catalog and Process | Eight-week discovery, radar windows and actual PU measurement pass |
 | Planetary Computer RTC | Anonymous metadata; pixel reads not implemented in this spike | Metadata present at every site/week in this sample; pipeline fallback disabled |
 
@@ -102,7 +102,38 @@ names in the `allyourbase-cdse` keyring service. Follow the
 CDSE S3 pixel reads additionally use `CDSE_S3_ACCESS_KEY_ID` and
 `CDSE_S3_SECRET_ACCESS_KEY`; these are separate from OAuth credentials. See
 [CDSE S3 access](https://documentation.dataspace.copernicus.eu/APIs/S3.html).
-`.env` is ignored but not loaded automatically.
+`.env` is ignored but not loaded automatically. `providers doctor` separately
+reports `pixel_credentials` for S3, so anonymous metadata readiness cannot be
+mistaken for authenticated pixel access. Presence does not prove authentication.
+
+The owner selected **Google Colab for processing** on 2026-10-14. The bounded
+[Colab notebook](../notebooks/phase-1-cdse-optical.ipynb) passed this acceptance
+check on 2026-10-14; follow [its setup guide](../notebooks/README.md). Create keys in the
+[CDSE S3 key manager](https://eodata-s3keysmanager.dataspace.copernicus.eu/), choose
+an expiry and save the one-time secret directly in Colab Secrets under the two
+variable names above. Enable access for this notebook. OAuth credentials stored
+in the Windows keychain are not copied to Colab and are not needed for this
+optical-only check. The notebook keeps credentials in subprocess memory and does
+not write them to the source ZIP, runtime settings or evidence archive.
+
+A source ZIP with a matching SHA-256 includes the exact CLI/verifier and locked
+requirements, including current working-tree changes. The notebook runs only
+`cdse_stac`, with `--weeks 8 --end-week 2026-W41 --pixels`. It reads one acquisition
+per approved area. A CPU runtime is sufficient. Full resumable processing and
+shared writer locking remain future Phase 7a work.
+
+After retrieval, verify the saved output without repeating network requests:
+
+```sh
+uv run --extra access allyourbase providers validate-optical --report-dir /path/to/external/spikes/RUN_ID --aoi-file docs/proposals/phase-1-aois.geojson --provider cdse_stac
+```
+
+The verifier writes `optical-validation.json` only on success. It requires all
+configured bands/parts for all approved areas, matching scene/asset provenance,
+SHA-256 hashes, CRS, transforms, bounded dimensions, finite non-nodata pixels and
+valid SCL classes. Native windows may be clipped to their source tile; these
+checks do not establish cloud-free coverage. Export the complete evidence ZIP
+before the Colab VM is discarded.
 
 ```sh
 uv run --extra access allyourbase providers spike --aoi-file docs/proposals/phase-1-aois.geojson --provider earth_search --provider cdse_sentinelhub --pixels --radar
@@ -130,7 +161,10 @@ charge. Process POSTs are not blindly retried after ambiguous failures.
 The eight-week tables, windowed optical reads and valid radar chip metadata must be
 reproducible for all three approved sites. The provider decision must cite measurements,
 coverage and budget consumption. Live integration checks run only when explicitly
-configured; offline tests use synthetic metadata and pixels. Primary-provider access and costs pass for this Russian pilot. CDSE optical
-fallback window reads remain pending S3 credentials; keep the PR in draft until
-that provider-comparison check passes. Multinational live testing was removed
-from this pilot by the owner; global synthetic geometry tests still run.
+configured; offline tests use synthetic metadata and pixels. Primary-provider
+access, measured radar costs and CDSE optical fallback windows pass for this
+Russian pilot. The Colab source manifest matches the delivered bundle, and local
+revalidation agrees with the Colab result. PR #2 can proceed to code review;
+passing access acceptance does not itself authorize merging. Multinational live
+testing was removed from this pilot by the owner; global synthetic geometry
+tests still run.

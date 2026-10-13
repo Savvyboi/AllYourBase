@@ -4,13 +4,15 @@ Updated 2026-10-14 (Europe/Helsinki). This file applies to the whole repository.
 
 ## Purpose and authoritative records
 
-Build a local, review-first Sentinel-1/Sentinel-2 pipeline with a human-curated,
-sourced catalogue and a later static Hugo/GitHub Pages website. Current user
+Build a review-first Sentinel-1/Sentinel-2 pipeline with Google Colab processing,
+a human-curated, sourced catalogue and a later static Hugo/GitHub Pages website. Current user
 instructions take precedence over historical documents and this guide.
 
 Read [the active build plan](docs/build-plan.md) for detailed acceptance criteria
-and [the updated Word plan](docs/build-plan.docx) for the full original design
-with current progress annotations. Original design proposals are not completed
+and [the Word plan snapshot](docs/build-plan.docx) for the full original design.
+The Word snapshot predates the successful Colab fallback check; the Markdown
+plan and this guide contain current acceptance status. The Windows Word renderer
+is unavailable, so do not claim that snapshot has been updated or re-rendered. Original design proposals are not completed
 features or authorization to deploy, publish, merge, scrape restricted sources,
 or change credentials. Verify actual repository state before acting.
 
@@ -24,8 +26,12 @@ Use [Phase 1 setup](docs/phase-1.md),
 - Phase 0 is complete and merged in PR #1. The Python 3.12/uv foundation, strict
   models, six JSON Schemas, catalogue checking, UTC ISO-week planning and CLI
   command surface are implemented.
-- PR #2 contains Phase 1 and remains draft. Earth Search optical and CDSE
-  Sentinel Hub radar access pass for the approved Russian pilot.
+- PR #2 contains Phase 1 and awaits code review. Earth Search optical, CDSE
+  optical fallback and CDSE Sentinel Hub radar access pass for the approved pilot.
+- The Colab optical run 20261013T234356Z-1737c37ff296467c979cd05e9ab00b63
+  produced 21 verified CDSE band TIFFs and 24 successful site/week rows. Local
+  revalidation agrees with Colab, and its source manifest matches the delivered
+  bundle. Credential setup is complete in Colab; secret values were not imported.
 - The owner approved Chkalovskiy, Engels and Olenya as 4 km test windows on
   2026-10-14 and explicitly authorized the live access checks. This replaced the
   original three-country spike. Do not request that approval again for the same
@@ -37,7 +43,7 @@ Use [Phase 1 setup](docs/phase-1.md),
 - Successful radar Process calls each reported 3.067035675 PU. Charges for
   failed/debug attempts were retained. These are measurements for these requests,
   not an account-wide quota or a guaranteed future cost.
-- Last verified code checks: 131 pytest/Hypothesis tests, Ruff, format, strict
+- Last verified code checks: 147 pytest/Hypothesis tests, Ruff, format, strict
   mypy, settings/catalogue/schema checks and all five pre-commit hooks pass.
 - Production catalogue is empty. The approved test windows are separate from
   production geometry and contain no established unit/equipment claims.
@@ -46,20 +52,22 @@ Use [Phase 1 setup](docs/phase-1.md),
 
 ## Immediate continuation
 
-1. Finish the CDSE optical fallback check. OAuth/keychain setup works; separate
-   CDSE_S3_ACCESS_KEY_ID and CDSE_S3_SECRET_ACCESS_KEY are missing. The current S3
-   reader uses environment variables. Never ask for secret values in chat or print
-   them. .env files are ignored but not loaded automatically.
-2. Run a bounded cdse_stac optical spike for all three approved areas using
-   --pixels. Keep reports/imagery in the external workspace and verify seven
-   band windows, georeferencing and hashes. Preserve existing evidence.
-3. Update ADR 0002 and validation docs with actual fallback results. Keep PR #2
-   in draft until this acceptance check passes, then prepare it for review.
-4. Continue with Phase 2 source ingestion and catalogue review after Phase 1
-   acceptance. Do not confuse the existing schemas with a completed catalogue.
+1. Complete code review of PR #2. Phase 1 live access acceptance now passes for
+   the approved Russian pilot, including CDSE optical S3 fallback from Colab.
+   Do not repeat imagery requests just to verify documentation; use the retained
+   external evidence and providers validate-optical. Do not merge without review.
+2. Continue with Phase 2 source ingestion and catalogue review after Phase 1
+   review. Do not confuse existing schemas or access-test windows with a completed
+   production catalogue. Keep the next milestone in its own reviewable PR.
+3. Google Colab is the selected processing runtime. The thin Phase 1 notebook has
+   been exercised successfully. Full processing still needs the resumable results
+   store, VM-local DB, checkpoint sync and shared one-writer lock. Keep secret
+   values in Colab Secrets, with notebook access enabled; never ask for values
+   in chat or print them. The S3 reader consumes environment variables and .env
+   is not loaded automatically.
 
 Earth Search is the measured optical primary; CDSE Sentinel Hub is the measured
-radar primary. CDSE optical fallback pixels remain unverified. Planetary Computer
+radar primary. CDSE optical fallback pixels are verified for these three areas. Planetary Computer
 RTC metadata coverage was observed in this pilot, but pixel retrieval/signing
 is unimplemented and its pipeline fallback stays disabled. GDAL HTTP transfer
 bytes and range-request counts remain unknown.
@@ -67,19 +75,19 @@ bytes and range-request counts remain unknown.
 ## Build plan and acceptance sequence
 
 Implement milestones in order and use a separate reviewable PR per phase.
-The current phase is Phase 1; its remaining fallback check is the first priority.
+Phase 1 access acceptance passes; code review is the remaining phase gate.
 
 | Phase | Current status | Next work and acceptance |
 | --- | --- | --- |
 | 0 Foundation | Complete, merged | Preserve strict contracts, schema generation, catalogue integrity and planning without side effects. Required CLI commands and checks already pass. |
-| 1 Data access | Primary providers verified; draft | Finish CDSE optical S3 reads. Acceptance: eight-week provider tables, Earth Search/CDSE optical windows, valid radar chips, measured usage and documented primary/fallback choice for the approved Russian pilot. |
+| 1 Data access | Pilot access acceptance passes; code review pending | Eight-week provider tables, Earth Search/CDSE optical windows, valid radar chips, measured radar usage and provider choice are verified. Review PR #2 before closing the phase. |
 | 2 Catalogue and ingestion | Contracts/schemas done; ingestion not started | Import OSM/Wikidata/OurAirports/GeoNames with immutable manifests; extract permitted PDFs; add DuckDB staging, normalization, geocoding, matching and proposals; build review queue. Acceptance: 10+ reviewed Russian production sites with sourced links, idempotent ingestion and correct zone preview. |
 | 3 Preprocessing and indicators | Radar grid/discovery prototypes only | Finish global grids, resampling, persistent cache, masks, alignment and all configured indicators. Acceptance: synthetic/golden correctness and measured run timing under five minutes cold, one minute cached. Targets are not achieved claims. |
 | 4 Backfill and baselines | Not implemented | Resumable processing from 2024-W01, catch-up, late scenes, seasonal baselines and warm-up. Acceptance: 52+ weeks per pilot site plus data-gap report. Planning is not processing. |
 | 5 Scoring events images review | Not implemented | Explainable levels/direction/confidence/drivers, merging, image pairs and durable local review decisions. Acceptance: event images <=40 KB and decisions survive restart. |
 | 6 Website | Not implemented | Hugo pages/taxonomies, facet index, Pagefind, maps/charts and schema/link/browser checks. Acceptance: 100-site build under two minutes, 375 px usability, no console errors/broken links. |
 | 7 Publish and operations | Not implemented; spike ledger prototype exists | Reviewed export, separate site repo, scoped credentials, allow-list and size/schema/link checks, scheduler, locks, catch-up, notifications, backup and full usage accounting. Acceptance: two unattended scheduled weeks and publishing after review. |
-| 7a Colab | Optional, not implemented | Thin notebook, Drive archives, secrets, VM-local DB, checkpoint/atomic sync and one-writer lock. Acceptance: clean resume after interruption and no overlapping writers. |
+| 7a Colab | Selected runtime; Phase 1 access notebook exercised | Full processing still needs VM-local DB, checkpoint/atomic sync and one-writer lock. Acceptance: clean resume after interruption and no overlapping writers. |
 | 8 Another country | Deferred beyond Russian pilot | Add a country/climate through sourced catalogue/config records. Acceptance: no country-specific algorithm code changes and global edge-case tests pass. |
 | 9 Validation and tuning | Not implemented | Sourced event backtests, threshold tuning and methods. Acceptance: documented confirmation rates, false events per site-year and no-data fractions; version and retain old results. |
 | 10 Machine learning | Optional, not implemented | Isolation Forest second opinion; supervised work only after sufficient reviewed labels and a validated rule-based pipeline. |
@@ -97,7 +105,8 @@ account. The three approved access windows do not decide these later questions.
 ## Architecture and data boundaries
 
 - Keep code and curated catalogue in this repository. Keep bulky data, raw imagery,
-  local databases, source snapshots and full runtime reports outside Git. Publish
+  local databases, source snapshots and full runtime reports outside Git. Colab
+  working state stays on the VM; Drive receives completed evidence archives. Publish
   only reviewed, validated outputs to the eventual separate site repository.
 - Use allyourbase as package/CLI; basewatch remains a compatibility alias.
   ALLYOURBASE_HOME overrides BASEWATCH_HOME and the configured external workspace.

@@ -1,6 +1,7 @@
 """Provider diagnostics and access-spike commands; nothing is scored or published."""
 
 import json
+import os
 from pathlib import Path
 from typing import Annotated
 
@@ -52,6 +53,16 @@ def doctor(
                 "enabled": provider.enabled,
                 "sensor": provider.sensor,
                 "credentials": credential_state,
+                "pixel_credentials": (
+                    "configured"
+                    if all(
+                        os.environ.get(name or "")
+                        for name in (provider.s3_access_key_env, provider.s3_secret_key_env)
+                    )
+                    else "missing"
+                )
+                if provider.s3_endpoint
+                else credential_state,
                 "status": "not_checked",
             }
             if online:
@@ -201,3 +212,27 @@ def spike(
             "Some access checks failed; see the saved report for explicit statuses.", err=True
         )
         raise typer.Exit(1)
+
+
+@providers_app.command("validate-optical")
+def validate_optical(
+    ctx: typer.Context,
+    report_dir: Annotated[Path, typer.Option(help="Existing external spike report directory.")],
+    aoi_file: Annotated[Path, typer.Option(help="The approved AOIs used for this spike.")],
+    provider: Annotated[str, typer.Option(help="Optical provider to verify.")] = "cdse_stac",
+) -> None:
+    """Verify saved optical pixels and provenance without making network requests."""
+    from allyourbase.providers.validation import validate_optical_report
+
+    project = _project_from_context(ctx)
+    if report_dir.resolve().is_relative_to(project.root):
+        raise typer.BadParameter("report directory must be outside the code repository")
+    try:
+        summary = validate_optical_report(
+            report_dir, _areas(project, aoi_file, False), project.settings, provider
+        )
+    except (ValueError, OSError):
+        raise typer.BadParameter(
+            "optical validation failed; check completeness, provenance, grids and hashes"
+        ) from None
+    typer.echo(json.dumps(summary, ensure_ascii=False, indent=2))

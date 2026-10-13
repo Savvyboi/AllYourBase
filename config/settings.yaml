@@ -7,7 +7,7 @@ runtime:
   home_env: ALLYOURBASE_HOME
   legacy_home_env: BASEWATCH_HOME
 
-# Primary access measured for the Russian pilot; fallback pixel checks remain open.
+# Optical primary/fallback and radar primary access verified for the Russian pilot.
 # Credential VALUES must never be put here.
 providers:
   optical:

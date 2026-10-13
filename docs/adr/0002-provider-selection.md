@@ -1,6 +1,6 @@
 # ADR 0002 Provider access and selection
 
-Status: primary selection measured for the approved Russian pilot; fallback pixel validation open.
+Status: primary and optical fallback selection verified for the approved Russian pilot.
 Date: 2026-10-13.
 
 ## Context and decisions
@@ -43,16 +43,36 @@ terrain-corrected four-band CDSE radar reads pass for all three sites. Each rada
 Process request reported 3.067035675 PU for a 401 by 401, 10 m output grid.
 
 Use Earth Search as the measured optical primary and CDSE Sentinel Hub as the
-measured radar primary for this pilot. CDSE optical remains a provisional fallback
-because its separate S3 keys are missing. Planetary Computer metadata coverage is
-present for this sample, but pixel retrieval/signing is unimplemented and its
+measured radar primary for this pilot. Select CDSE STAC as the verified optical
+fallback: its separate S3 keys enabled seven-band Colab reads at all three areas,
+and independent local validation passes all 21 files. Planetary Computer metadata
+coverage is present for this sample, but pixel retrieval/signing is unimplemented and its
 pipeline fallback remains disabled. These observations do not establish global
 coverage, clear optical observations, or future availability.
 
 See `docs/phase-1-live-validation.md` for per-week tables, local report IDs, all
-attempted-request costs and remaining acceptance work. Keep the PR in draft until
-the CDSE optical window-read check passes. Only a terminal `.SAFE` suffix is
+attempted-request costs and acceptance evidence. The CDSE optical window-read
+check now passes, so PR #2 can proceed to code review. Only a terminal `.SAFE` suffix is
 normalized when comparing radar product IDs; checksums and `_COG` remain exact.
+
+## Colab continuation on 2026-10-14
+
+Google Colab is the owner-selected processing runtime. The Phase 1 notebook is
+thin: it installs a SHA-256-pinned source ZIP with locked dependencies, loads
+separate S3 credentials from Colab Secrets into subprocess memory, calls the CLI
+and exports completed evidence. It does not establish full processing, resumable
+backfill or shared writer locking. Keep working files on the VM and archive
+completed runs to downloads or Drive.
+
+The owner supplied the successful Colab run
+`20261013T234356Z-1737c37ff296467c979cd05e9ab00b63`. All 24 site/week rows contain
+acquisitions and match the earlier discovery counts. Independent local checks
+agree with Colab on all 21 files: configured bands/parts, scene/asset provenance,
+hashes, native grids and finite non-nodata pixels. The source manifest matches
+the delivered bundle. The run made no radar Process calls; STAC PU headers were
+absent and S3 transfer bytes/range-request counts remain unknown. This verifies
+optical fallback for these areas and dates, not general availability or full
+Colab processing. Secret values were not imported into the local project.
 
 ## Primary references
 
