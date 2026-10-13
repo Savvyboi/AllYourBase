@@ -1,41 +1,43 @@
 # Phase 1 data access spike
 
 Phase 0 is merged. This branch implements provider access and offline verification.
-**Phase 1 acceptance is still open:** three AOIs need owner approval, and live
-pixel reads and actual radar costs still need measurement. No provider selection
-is finalized and no activity is scored.
+**Primary access passes for the Russian pilot:** the owner approved three airbase
+test windows on 2026-10-14. Eight-week discovery, Earth Search optical windows and
+CDSE radar windows now pass. CDSE optical fallback pixels still need separate S3
+credentials. See `docs/phase-1-live-validation.md` for measured evidence. No activity is scored.
 
 ## Inputs needed
 
-- Owner approval of the three source-backed test windows described below.
-- Three reviewed, cited test AOIs in three countries at different latitudes.
-  AOIs may be supplied by the owner or proposed from permitted import sources and
-  then approved. Do not promote the synthetic fixture into real monitoring data.
+- Three reviewed, cited Russian airbase test windows at different latitudes,
+  approved by the owner on 2026-10-14.
+- New or replacement AOIs still require review of their sources and geometry.
+  Do not promote synthetic fixtures into real monitoring data.
 - A CDSE Sentinel Hub OAuth client, configured on the owner's machine using
   `CDSE_CLIENT_ID` and `CDSE_CLIENT_SECRET` or the OS keychain integration.
   Secret values must not be pasted into documentation, catalogue files or chat.
 
-The plan's pilot remains Russia. Phase 1's multinational coverage checks are
-separate from the later, larger Russia catalogue. Site selection is not assumed
+The owner changed this access spike from three countries to Russian airbases on
+2026-10-14. Southern-hemisphere and multinational live coverage are outside this
+pilot; synthetic global-grid tests remain in place. Site selection is not assumed
 to establish current deployments or equipment presence.
 
-## Proposed test windows
+## Approved test windows
 
-`docs/proposals/phase-1-aois.geojson` contains three unapproved 4 km squares:
+`docs/proposals/phase-1-aois.geojson` contains three owner-approved 4 km test squares:
 
 | Country | Location | Source |
 | --- | --- | --- |
 | RUS | Chkalovskiy Air Base | [OurAirports UUMU](https://ourairports.com/airports/UUMU/) |
-| FIN | Rovaniemi Airport | [OurAirports EFRO](https://ourairports.com/airports/EFRO/) |
-| AUS | RAAF Base Richmond | [OurAirports YSRI](https://ourairports.com/airports/YSRI/) |
+| RUS | Engels Air Base | [OurAirports RU-8602](https://ourairports.com/airports/RU-8602/) |
+| RUS | Olenya Air Base | [OurAirports RU-4464](https://ourairports.com/airports/RU-4464/) |
 
 Each window is constructed around a cited airport point in its UTM grid. It is
 not a surveyed base boundary or a unit/equipment claim. Records retain the source
 row, accessed date, SHA-256 and exact pinned snapshot URL. OurAirports publishes
 its airport data in the public domain; see its [download terms](https://ourairports.com/data/).
 
-Inspect these records and their geometry. The owner can approve, adjust or replace
-them; only then set `approved: true`. A live spike refuses unapproved test AOIs.
+The owner explicitly approved these three areas and the live access checks on
+2026-10-14. A live spike continues to refuse any unapproved replacement AOIs.
 These files stay separate from the production catalogue, which remains empty.
 
 ## Implemented access paths
@@ -74,10 +76,10 @@ not erase other results; a spike with access failures exits with code 1.
 
 | Provider | Access | Checked here |
 | --- | --- | --- |
-| Earth Search | Anonymous metadata and COG pixels | Collection and sample asset keys reachable |
-| CDSE STAC | Anonymous metadata; separate S3 keys for private S3 assets | Collection and sample asset keys reachable |
-| CDSE Sentinel Hub | OAuth Catalog and Process | Credentials missing |
-| Planetary Computer RTC | Anonymous metadata; pixel reads not implemented in this spike | Collection reachable; AOI coverage unmeasured |
+| Earth Search | Anonymous metadata and COG pixels | Eight-week discovery and seven-band windows pass at all three sites |
+| CDSE STAC | Anonymous metadata; separate S3 keys for private S3 assets | Eight-week discovery passes; pixels report `s3_credentials_missing` |
+| CDSE Sentinel Hub | OAuth Catalog and Process | Eight-week discovery, radar windows and actual PU measurement pass |
+| Planetary Computer RTC | Anonymous metadata; pixel reads not implemented in this spike | Metadata present at every site/week in this sample; pipeline fallback disabled |
 
 RTC remains disabled as a pipeline fallback. Selecting it explicitly for a
 metadata spike does not enable it or claim coverage.
@@ -91,7 +93,7 @@ uv run allyourbase providers spike --aoi-file docs/proposals/phase-1-aois.geojso
 After AOI approval, compare public metadata:
 
 ```sh
-uv run allyourbase providers spike --aoi-file docs/proposals/phase-1-aois.geojson --provider earth_search --provider cdse_stac --provider planetary_computer
+uv run allyourbase providers spike --aoi-file docs/proposals/phase-1-aois.geojson --provider earth_search --provider cdse_stac --provider cdse_sentinelhub --provider planetary_computer
 ```
 
 Configure OAuth credentials locally in the environment or under their variable
@@ -103,7 +105,7 @@ CDSE S3 pixel reads additionally use `CDSE_S3_ACCESS_KEY_ID` and
 `.env` is ignored but not loaded automatically.
 
 ```sh
-uv run --extra access allyourbase providers spike --aoi-file docs/proposals/phase-1-aois.geojson --pixels --radar
+uv run --extra access allyourbase providers spike --aoi-file docs/proposals/phase-1-aois.geojson --provider earth_search --provider cdse_sentinelhub --pixels --radar
 ```
 
 Repeated `--provider` and optional `--site` restrict a check. `--weeks` defaults to
@@ -128,6 +130,7 @@ charge. Process POSTs are not blindly retried after ambiguous failures.
 The eight-week tables, windowed optical reads and valid radar chip metadata must be
 reproducible for all three approved sites. The provider decision must cite measurements,
 coverage and budget consumption. Live integration checks run only when explicitly
-configured; offline tests use synthetic metadata and pixels. These live acceptance
-criteria have not passed yet. Keep this PR in draft and update ADR 0002 after
-measuring the approved AOIs before treating Phase 1 as complete.
+configured; offline tests use synthetic metadata and pixels. Primary-provider access and costs pass for this Russian pilot. CDSE optical
+fallback window reads remain pending S3 credentials; keep the PR in draft until
+that provider-comparison check passes. Multinational live testing was removed
+from this pilot by the owner; global synthetic geometry tests still run.

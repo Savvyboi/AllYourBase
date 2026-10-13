@@ -208,7 +208,7 @@ def fetch_radar_window(
             not isinstance(scene_ids, list)
             or not scene_ids
             or not all(isinstance(scene_id, str) for scene_id in scene_ids)
-            or set(scene_ids) != {expected}
+            or {scene_id.removesuffix(".SAFE") for scene_id in scene_ids} != {expected}
         ):
             raise ProviderError("radar_scene_selection_mismatch", acquisition.provider)
         grid = site_grid(geometry, settings)

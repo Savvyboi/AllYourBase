@@ -8,48 +8,6 @@
         "coordinates": [
           [
             [
-              25.785575174097524,
-              66.54504645233037
-            ],
-            [
-              25.875615603394426,
-              66.54571828093496
-            ],
-            [
-              25.8739918050091,
-              66.58159513510515
-            ],
-            [
-              25.78382141750518,
-              66.58092215688119
-            ],
-            [
-              25.785575174097524,
-              66.54504645233037
-            ]
-          ]
-        ]
-      },
-      "properties": {
-        "id": "fin-efro-access-test",
-        "name": "Rovaniemi Airport",
-        "country": "FIN",
-        "approved": false,
-        "source_url": "https://ourairports.com/airports/EFRO/",
-        "source_snapshot_url": "https://raw.githubusercontent.com/davidmegginson/ourairports-data/132fc8c3471c96cfffe3ece8a89f9f252f670243/airports.csv",
-        "source_record": "OurAirports airports.csv id=2341 ident=EFRO",
-        "source_sha256": "61c82a74de991e138dc57e1fbc72b6f47da30db9954be4e414452e896f7d40d8",
-        "accessed": "2026-10-13",
-        "geometry_note": "Proposed 4 km square centred on the cited airport point, constructed in EPSG:32635. This is not a surveyed site boundary; human approval is required."
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
               38.03018397082382,
               55.860084539465966
             ],
@@ -76,13 +34,13 @@
         "id": "rus-uumu-access-test",
         "name": "Chkalovskiy Air Base",
         "country": "RUS",
-        "approved": false,
+        "approved": true,
         "source_url": "https://ourairports.com/airports/UUMU/",
         "source_snapshot_url": "https://raw.githubusercontent.com/davidmegginson/ourairports-data/132fc8c3471c96cfffe3ece8a89f9f252f670243/airports.csv",
         "source_record": "OurAirports airports.csv id=34969 ident=UUMU",
         "source_sha256": "61c82a74de991e138dc57e1fbc72b6f47da30db9954be4e414452e896f7d40d8",
-        "accessed": "2026-10-13",
-        "geometry_note": "Proposed 4 km square centred on the cited airport point, constructed in EPSG:32637. This is not a surveyed site boundary; human approval is required."
+        "accessed": "2026-10-14",
+        "geometry_note": "4 km test square centred on the cited airport point, constructed in EPSG:32637. This is not a surveyed site boundary. The owner approved this location and test window on 2026-10-14."
       }
     },
     {
@@ -92,39 +50,81 @@
         "coordinates": [
           [
             [
-              150.76104327029552,
-              -33.62228907672736
+              46.185739122478736,
+              51.46281412710329
             ],
             [
-              150.80413563230775,
-              -33.62306202138144
+              46.243305261851766,
+              51.46221781367318
             ],
             [
-              150.80504977803923,
-              -33.58701059390925
+              46.24428351116368,
+              51.49817636417084
             ],
             [
-              150.76197531935787,
-              -33.58623869758499
+              46.18667210450499,
+              51.49877344124907
             ],
             [
-              150.76104327029552,
-              -33.62228907672736
+              46.185739122478736,
+              51.46281412710329
             ]
           ]
         ]
       },
       "properties": {
-        "id": "aus-ysri-access-test",
-        "name": "RAAF Base Richmond",
-        "country": "AUS",
-        "approved": false,
-        "source_url": "https://ourairports.com/airports/YSRI/",
+        "id": "rus-ru-8602-access-test",
+        "name": "Engels Air Base",
+        "country": "RUS",
+        "approved": true,
+        "source_url": "https://ourairports.com/airports/RU-8602/",
         "source_snapshot_url": "https://raw.githubusercontent.com/davidmegginson/ourairports-data/132fc8c3471c96cfffe3ece8a89f9f252f670243/airports.csv",
-        "source_record": "OurAirports airports.csv id=27144 ident=YSRI",
+        "source_record": "OurAirports airports.csv id=34984 ident=RU-8602",
         "source_sha256": "61c82a74de991e138dc57e1fbc72b6f47da30db9954be4e414452e896f7d40d8",
-        "accessed": "2026-10-13",
-        "geometry_note": "Proposed 4 km square centred on the cited airport point, constructed in EPSG:32756. This is not a surveyed site boundary; human approval is required."
+        "accessed": "2026-10-14",
+        "geometry_note": "4 km test square centred on the cited airport point, constructed in EPSG:32638. This is not a surveyed site boundary. The owner approved this location and test window on 2026-10-14."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              33.41542215911199,
+              68.13399194299014
+            ],
+            [
+              33.51165804312069,
+              68.13372257425408
+            ],
+            [
+              33.51245696846441,
+              68.16959778016442
+            ],
+            [
+              33.416070829299606,
+              68.16986763605966
+            ],
+            [
+              33.41542215911199,
+              68.13399194299014
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "rus-ru-4464-access-test",
+        "name": "Olenya Air Base",
+        "country": "RUS",
+        "approved": true,
+        "source_url": "https://ourairports.com/airports/RU-4464/",
+        "source_snapshot_url": "https://raw.githubusercontent.com/davidmegginson/ourairports-data/132fc8c3471c96cfffe3ece8a89f9f252f670243/airports.csv",
+        "source_record": "OurAirports airports.csv id=35046 ident=RU-4464",
+        "source_sha256": "61c82a74de991e138dc57e1fbc72b6f47da30db9954be4e414452e896f7d40d8",
+        "accessed": "2026-10-14",
+        "geometry_note": "4 km test square centred on the cited airport point, constructed in EPSG:32636. This is not a surveyed site boundary. The owner approved this location and test window on 2026-10-14."
       }
     }
   ]

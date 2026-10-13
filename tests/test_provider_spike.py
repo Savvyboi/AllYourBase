@@ -138,7 +138,10 @@ def test_proposed_areas_require_human_approval(root: Path, tmp_path: Path) -> No
     path = root / "docs/proposals/phase-1-aois.geojson"
     proposals = load_model(path, ProbeAOIs)
     assert len(proposals.features) == 3
-    assert not any(feature.properties.approved for feature in proposals.features)
+    for feature in proposals.features:
+        feature.properties.approved = False
+    path = tmp_path / "unapproved-aois.geojson"
+    path.write_text(proposals.model_dump_json(), encoding="utf-8")
     workspace = tmp_path / "workspace"
     result = runner.invoke(
         app,

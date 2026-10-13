@@ -7,7 +7,7 @@ runtime:
   home_env: ALLYOURBASE_HOME
   legacy_home_env: BASEWATCH_HOME
 
-# Provisional provider selection from the plan; Phase 1 measures access/coverage.
+# Primary access measured for the Russian pilot; fallback pixel checks remain open.
 # Credential VALUES must never be put here.
 providers:
   optical:
@@ -64,7 +64,7 @@ providers:
       sensor: s1
       catalogue_url: https://planetarycomputer.microsoft.com/api/stac/v1
       collection: sentinel-1-rtc
-      enabled: false # Coverage and asset signing have not been tested.
+      enabled: false # Pilot metadata coverage verified; RTC pixel access/signing is unimplemented.
 
 preprocessing:
   resolution_m: 10

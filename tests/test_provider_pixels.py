@@ -182,13 +182,25 @@ def radar_response(
     return stream.getvalue()
 
 
+@pytest.mark.parametrize(
+    "scene_id,returned_id",
+    [
+        ("synthetic-radar-scene", "synthetic-radar-scene"),
+        ("synthetic-radar-scene_COG.SAFE", "synthetic-radar-scene_COG.SAFE"),
+        ("synthetic-radar-scene_COG.SAFE", "synthetic-radar-scene_COG"),
+    ],
+)
 def test_radar_response_provenance_and_actual_cost(
-    tmp_path: Path, settings: Settings, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    settings: Settings,
+    monkeypatch: pytest.MonkeyPatch,
+    scene_id: str,
+    returned_id: str,
 ) -> None:
     monkeypatch.setattr(
         "allyourbase.providers.auth.load_credentials", lambda *args: Credentials("client", "secret")
     )
-    scene = radar_scene()
+    scene = radar_scene().model_copy(update={"scene_id": scene_id})
     geometry = small_aoi()
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -196,7 +208,7 @@ def test_radar_response_provenance_and_actual_cost(
             return httpx.Response(200, json={"access_token": "secret-token", "expires_in": 3600})
         return httpx.Response(
             200,
-            content=radar_response(scene.scene_id, geometry, settings),
+            content=radar_response(returned_id, geometry, settings),
             headers={settings.access.processing_units_header: "1.25"},
         )
 
@@ -212,7 +224,8 @@ def test_radar_response_provenance_and_actual_cost(
             ledger,
             tmp_path / "chips",
         )
-    assert metadata["scene_ids"] == [scene.scene_id]
+    assert metadata["scene_ids"] == [returned_id]
+    assert metadata["requested_scene_id"] == scene_id
     assert metadata["processing_units"] == 1.25
     assert metadata["valid_pixels"] > 0
     assert json.loads(ledger.path.read_text())[0]["actual_pu"] == 1.25

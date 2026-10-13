@@ -3,9 +3,10 @@
 AllYourBase is a local, review-first GEOINT tool for weekly aggregate change
 monitoring with Sentinel-1 and Sentinel-2. Phase 0 is complete. This version adds
 the **Phase 1 provider-access spike**: discovery, optical window reads, radar
-requests and local usage reports. Its live three-country acceptance measurements
-still require approved test AOIs and CDSE credentials. Indicators, scoring,
-review UI and the Hugo website remain future milestones.
+requests and local usage reports. Eight-week discovery, optical/radar reads and
+measured radar costs now pass for three owner-approved Russian airbase test areas.
+CDSE optical fallback reads still need separate S3 credentials. Indicators,
+scoring, review UI and the Hugo website remain future milestones.
 
 Code repository: [Savvyboi/AllYourBase](https://github.com/Savvyboi/AllYourBase).
 Each build-plan phase is proposed through a separate pull request.
@@ -79,9 +80,10 @@ implementation milestones. Their help screens describe that limitation.
 ## Configuration and workspace
 
 `config/settings.yaml` holds all thresholds, provider definitions, budgets and
-publishing settings. Values from the plan are provisional; provider coverage,
-quota and request costs still need Phase 1 measurements. Public collection access
-has been checked; source freshness at the test AOIs and radar costs are unmeasured.
+publishing settings. Primary-provider access and radar request costs have been
+measured for the Russian pilot; see `docs/phase-1-live-validation.md`. Numerical
+analysis thresholds, account quota assumptions and fallback pixel access remain
+provisional. These measurements do not establish global coverage.
 
 `ALLYOURBASE_HOME` overrides the configured workspace; legacy `BASEWATCH_HOME`
 is also supported. When both are set, `ALLYOURBASE_HOME` wins. The default is

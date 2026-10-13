@@ -1,12 +1,15 @@
 # ADR 0002 Provider access and selection
 
-Status: access contracts implemented; provider selection provisional.
+Status: primary selection measured for the approved Russian pilot; fallback pixel validation open.
 Date: 2026-10-13.
 
 ## Context and decisions
 
-The build plan requires an eight-week multinational spike before relying on
-provider coverage or costs. Use one `ProviderClient` discovery/window-read
+The original build plan requested an eight-week multinational spike. On
+2026-10-14 the owner changed the test scope to Russian airbases and approved
+Chkalovskiy, Engels and Olenya. This pilot measures northern-latitude Russian
+coverage; multinational and southern-hemisphere live validation remain outside
+its scope. Use one `ProviderClient` discovery/window-read
 interface. Endpoints, collections, band aliases and tuning values stay in settings.
 Direct STAC/Process REST calls via HTTPX expose per-attempt accounting; Rasterio
 reads bounded native optical windows. Higher-level STAC/xarray packages remain
@@ -30,18 +33,26 @@ Validate exact radar scene provenance, requested CRS, transform, dimensions,
 FLOAT32 bands and masks before recording a successful chip. Any mismatch is a
 data-access failure, never an activity assessment.
 
-## Provider selection pending
+## Measured primary selection for the Russian pilot
 
-Earth Search, CDSE optical and Planetary Computer RTC collections were reachable
-on 2026-10-13. Optical asset names/schemes were inspected in global sample items.
-CDSE OAuth was not configured in the development environment. No approved-area
-acquisition table, live chip or measured radar charge is yet available.
-Primary/fallback choices remain provisional; RTC collection access does not
-prove recent coverage at an AOI.
+On 2026-10-14, eight-week discovery returned items at each of the three approved
+Russian airbases from Earth Search, CDSE optical, CDSE Sentinel Hub and Planetary
+Computer RTC. Earth Search and CDSE optical have the same newest acquisition date
+at each site within the sampled window. Seven-band Earth Search AOI reads and
+terrain-corrected four-band CDSE radar reads pass for all three sites. Each radar
+Process request reported 3.067035675 PU for a 401 by 401, 10 m output grid.
 
-The three cited AOI proposals need owner approval. Once their searches, pixel
-reads and costs are measured, update this ADR with evidence and final selection.
-Phase 1 remains incomplete until that acceptance work passes.
+Use Earth Search as the measured optical primary and CDSE Sentinel Hub as the
+measured radar primary for this pilot. CDSE optical remains a provisional fallback
+because its separate S3 keys are missing. Planetary Computer metadata coverage is
+present for this sample, but pixel retrieval/signing is unimplemented and its
+pipeline fallback remains disabled. These observations do not establish global
+coverage, clear optical observations, or future availability.
+
+See `docs/phase-1-live-validation.md` for per-week tables, local report IDs, all
+attempted-request costs and remaining acceptance work. Keep the PR in draft until
+the CDSE optical window-read check passes. Only a terminal `.SAFE` suffix is
+normalized when comparing radar product IDs; checksums and `_COG` remain exact.
 
 ## Primary references
 
