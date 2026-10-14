@@ -45,7 +45,19 @@ def main() -> None:
             name
             for name in selected
             if name
-            and Path(name).suffix in {".py", ".yaml", ".json", ".geojson", ".md", ".toml", ".lock"}
+            and Path(name).suffix
+            in {
+                ".py",
+                ".yaml",
+                ".json",
+                ".geojson",
+                ".md",
+                ".toml",
+                ".lock",
+                ".html",
+                ".rq",
+                ".overpassql",
+            }
         }
     )
     manifest = {

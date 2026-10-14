@@ -238,12 +238,19 @@ def osm_records(snapshot: Snapshot, payload: Path) -> Iterator[Record]:
 
 def _osm_geojson(snapshot: Snapshot, path: Path) -> Iterator[Record]:
     data = json.loads(path.read_text(encoding="utf-8"))
+    if "elements" in data or "remark" in data:
+        from allyourbase.sources.osm import overpass_features
+
+        data = overpass_features(data)
     for number, feature in enumerate(data["features"], 1):
         properties = feature["properties"]
         if not (
             properties.get("military")
             or properties.get("landuse") == "military"
             or properties.get("aeroway")
+            or properties.get("man_made") == "pier"
+            or properties.get("amenity") == "parking"
+            or properties.get("natural") == "water"
         ):
             continue
         geometry = feature["geometry"]
@@ -275,8 +282,20 @@ def _osm_geojson(snapshot: Snapshot, path: Path) -> Iterator[Record]:
             }
         else:
             continue
+        record_kind = (
+            "mask"
+            if properties.get("natural") == "water"
+            else "zone"
+            if (
+                properties.get("aeroway") == "apron"
+                or properties.get("man_made") == "pier"
+                or properties.get("amenity") == "parking"
+                or properties.get("military") == "vehicle_park"
+            )
+            else "site"
+        )
         yield Record(
-            kind="site",
+            kind=record_kind,
             external_id=identifier,
             name=properties.get("name:en") or properties.get("name") or identifier,
             name_local=properties.get("name"),
@@ -285,7 +304,21 @@ def _osm_geojson(snapshot: Snapshot, path: Path) -> Iterator[Record]:
             **values,
             attributes={
                 key: properties[key]
-                for key in ("military", "aeroway", "landuse", "icao", "wikidata")
+                for key in (
+                    "military",
+                    "aeroway",
+                    "landuse",
+                    "icao",
+                    "wikidata",
+                    "geometry_role",
+                    "geometry_issue",
+                    "note",
+                    "fixme",
+                    "military_service",
+                    "man_made",
+                    "amenity",
+                    "natural",
+                )
                 if key in properties
             }
             | {"osm_id": identifier},

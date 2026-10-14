@@ -26,5 +26,6 @@ function draw(){el('map').replaceChildren();const site=sites[Number(el('site').v
 el('site').onchange=draw;el('state').onchange=()=>refresh().catch(message);
 el('preview').onclick=async()=>{try{const data=await api('/api/preview',JSON.parse(el('bundle').value));sites=data.sites;renderOptions();await refreshEvidence();el('message').textContent='Geometry contracts valid. Validate edits checks the full catalogue.'}catch(e){message(e)}};
 for(const action of ['validate','accept','reject'])el(action).onclick=async()=>{try{if(!selected)throw Error('Select a proposal first.');const body={action,reviewer:el('reviewer').value,note:el('note').value};if(action!=='reject')body.bundle=JSON.parse(el('bundle').value);const result=await api('/api/decision/'+selected,body);el('message').textContent=JSON.stringify(result,null,2);await refresh()}catch(e){message(e)}};
-refresh().catch(message);
+const requested=new URLSearchParams(location.search).get("proposal");
+refresh().then(()=>requested?open(requested):undefined).catch(message);
 </script></html>

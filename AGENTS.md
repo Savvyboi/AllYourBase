@@ -51,7 +51,16 @@ Use [Phase 1 setup](docs/phase-1.md),
   retained snapshot produces zero new proposals. Supporting evidence attachments
   and a separate milestone-readiness report are implemented. All source records
   remain unapproved; production catalogue acceptance is still open.
-- Last verified code checks: 192 pytest/Hypothesis tests, Ruff, format, strict
+- The owner confirmed the mix of all Russian military base types on 2026-10-14.
+  Native OSM discovery retained 18,568 tagged features (not a count of bases).
+  The first mixed review packet has ten source footprints: four airbases, three
+  naval facilities and three ground-garrison candidates. Its 77 zone/mask
+  associations include 72 contained polygons and five boundary conflicts.
+  See [mixed-pilot evidence](docs/phase-2-mixed-pilot.md) and the selection under
+  docs/proposals/rus-mixed-pilot.yaml. All remain unapproved; status/dates and
+  dated unit/equipment links are still missing. The active queue has 185 records,
+  not 185 distinct bases. Repeat finalized imports produce zero new proposals.
+- Last verified code checks: 209 pytest/Hypothesis tests, Ruff, format, strict
   mypy, settings/catalogue/schema checks and all five pre-commit hooks pass.
 - Production catalogue is empty. The approved test windows are separate from
   production geometry and contain no established unit/equipment claims.
@@ -63,8 +72,8 @@ Use [Phase 1 setup](docs/phase-1.md),
 1. Phase 1 is merged. Preserve its measured acceptance evidence; do not repeat
    imagery requests merely to verify documentation.
 2. Continue Phase 2 production review using the new source workflow. The external
-   phase2-data workspace contains 31 unapproved site records and a review packet.
-   Wikidata country associations include bases abroad and organizational entities;
+   phase2-data workspace contains the mixed pilot packet and 185 active records.
+   Wikidata/OSM scope can include uncertain identities and locations;
    review location/identity and duplicates before selecting production sites. Gather
    permitted polygon/zone sources and dated unit/equipment claims, then expand to
    at least ten Russian sites across the required types for owner review. Source
@@ -105,7 +114,7 @@ Phases 0–1 are merged. Phase 2 workflow passes; production acceptance remains 
 
 Keep catalogue proposals/decisions and raw sources in the external workspace. Local
 workflow locking and recoverable acceptance are implemented; shared Colab/Drive
-checkpointing and locks remain Phase 7a work. Native osmium and live GeoNames/
+checkpointing and locks remain Phase 7a work. Native Overpass OSM import and geometry preview pass. Native osmium and live GeoNames/
 Geofabrik imports still need validation. The basic transliteration is not full BGN/PCGN.
 
 Phase 2 includes site/unit/equipment/source/taxonomy provenance, dated garrison

@@ -65,7 +65,9 @@ def snapshot_command(ctx: typer.Context, spec: Path, input_file: Path) -> None:
 def fetch_command(
     ctx: typer.Context,
     spec: Path,
-    query_file: Annotated[Path | None, typer.Option(help="Explicit SPARQL query file.")] = None,
+    query_file: Annotated[
+        Path | None, typer.Option(help="Explicit SPARQL or Overpass query file.")
+    ] = None,
     max_bytes: Annotated[int, typer.Option(min=1)] = 256_000_000,
 ) -> None:
     """Download import-class data only, with a byte limit; no redirects or credentials."""
@@ -104,6 +106,25 @@ def match_command(ctx: typer.Context) -> None:
 
 
 def register_catalogue_commands(app: typer.Typer) -> None:
+    @app.command("packet")
+    @guarded
+    def packet_command(
+        ctx: typer.Context,
+        selection: Path,
+        footprints: Path,
+        zones: Path,
+        output: Path,
+        review_url: str = "http://127.0.0.1:8768",
+    ) -> None:
+        """Prepare an unapproved source-geometry packet outside the repository."""
+        from allyourbase.catalogue.packet import build_packet
+
+        echo(
+            build_packet(
+                project_from_context(ctx), selection, footprints, zones, output, review_url
+            )
+        )
+
     @app.command("readiness")
     @guarded
     def readiness_command(

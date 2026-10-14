@@ -1,0 +1,12 @@
+source:
+  id: osm-rus-pilot-zones-20261014
+  title: OpenStreetMap mixed Russian pilot zone candidates 2026-10-14
+  url: https://www.openstreetmap.org/copyright
+  publisher: OpenStreetMap contributors
+  accessed: 2026-10-14
+  reuse_class: import
+  licence: ODbL-1.0
+  attribution: OpenStreetMap contributors
+connector: osm
+country: RUS
+download_url: https://overpass-api.de/api/interpreter

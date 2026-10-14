@@ -9,7 +9,7 @@ from allyourbase.models.catalogue import Source
 from allyourbase.models.common import Contract, CountryCode, NonEmpty
 
 Connector = Literal["ourairports", "runways", "geonames", "osm", "wikidata", "pdf", "manual"]
-Kind = Literal["site", "unit", "equipment", "place", "runway", "document", "link"]
+Kind = Literal["site", "unit", "equipment", "place", "runway", "document", "link", "zone", "mask"]
 Digest = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 PARSER_VERSION = "1"
 
