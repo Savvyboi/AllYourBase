@@ -7,7 +7,7 @@ runtime:
   home_env: ALLYOURBASE_HOME
   legacy_home_env: BASEWATCH_HOME
 
-# Provisional provider selection from the plan; Phase 1 measures access/coverage.
+# Optical primary/fallback and radar primary access verified for the Russian pilot.
 # Credential VALUES must never be put here.
 providers:
   optical:
@@ -19,16 +19,38 @@ providers:
   definitions:
     earth_search:
       kind: stac
+      sensor: s2
       catalogue_url: https://earth-search.aws.element84.com/v1
       collection: sentinel-2-c1-l2a
       enabled: true
+      band_assets:
+        b02: [blue, B02]
+        b03: [green, B03]
+        b04: [red, B04]
+        b08: [nir, B08]
+        b11: [swir16, B11]
+        b12: [swir22, B12]
+        scl: [scl, SCL]
     cdse_stac:
       kind: stac
+      sensor: s2
       catalogue_url: https://stac.dataspace.copernicus.eu/v1
       collection: sentinel-2-l2a
       enabled: true
+      s3_endpoint: https://eodata.dataspace.copernicus.eu
+      s3_access_key_env: CDSE_S3_ACCESS_KEY_ID
+      s3_secret_key_env: CDSE_S3_SECRET_ACCESS_KEY
+      band_assets:
+        b02: [B02_10m, B02, blue]
+        b03: [B03_10m, B03, green]
+        b04: [B04_10m, B04, red]
+        b08: [B08_10m, B08, nir]
+        b11: [B11_20m, B11, swir16]
+        b12: [B12_20m, B12, swir22]
+        scl: [SCL_20m, SCL, scl]
     cdse_sentinelhub:
       kind: sentinelhub
+      sensor: s1
       catalogue_url: https://sh.dataspace.copernicus.eu/api/v1/catalog/1.0.0
       collection: sentinel-1-grd
       process_url: https://sh.dataspace.copernicus.eu/api/v1/process
@@ -36,11 +58,13 @@ providers:
       client_id_env: CDSE_CLIENT_ID
       client_secret_env: CDSE_CLIENT_SECRET
       enabled: true
+      native_spacing_by_mode: {IW: 10, SM: 10, EW: 25}
     planetary_computer:
       kind: stac
+      sensor: s1
       catalogue_url: https://planetarycomputer.microsoft.com/api/stac/v1
       collection: sentinel-1-rtc
-      enabled: false # Coverage and asset signing have not been tested.
+      enabled: false # Pilot metadata coverage verified; RTC pixel access/signing is unimplemented.
 
 preprocessing:
   resolution_m: 10
@@ -154,4 +178,22 @@ matching:
   name_similarity: 0.85
   garrison_candidate_radius_km: 30
   stale_link_months: 12
+
+access:
+  lookback_weeks: 8
+  http_timeout_seconds: 60
+  retry_base_seconds: 1
+  max_retry_delay_seconds: 60
+  stac_page_size: 100
+  stac_max_pages: 1000
+  optical_max_scene_cloud_percent: 90
+  max_window_pixels: 6250000
+  max_process_response_bytes: 160000000
+  max_metadata_response_bytes: 20000000
+  max_process_dimension_px: 2500
+  radar_time_margin_seconds: 1
+  processing_units_header: x-processingunits-spent
+  radar_request_reservation_pu: 50 # Conservative reservation, not a measured cost.
+  keyring_service: allyourbase-cdse
+  token_refresh_fraction: 0.9
 

@@ -21,6 +21,7 @@ class RuntimeSettings(Contract):
 
 class Provider(Contract):
     kind: Literal["stac", "sentinelhub"]
+    sensor: Literal["s1", "s2"]
     catalogue_url: HttpUrl
     collection: NonEmpty
     enabled: bool
@@ -28,6 +29,11 @@ class Provider(Contract):
     token_url: HttpUrl | None = None
     client_id_env: EnvName | None = None
     client_secret_env: EnvName | None = None
+    band_assets: dict[Slug, list[NonEmpty]] = Field(default_factory=dict)
+    native_spacing_by_mode: dict[str, PositiveInt] = Field(default_factory=dict)
+    s3_endpoint: HttpUrl | None = None
+    s3_access_key_env: EnvName | None = None
+    s3_secret_key_env: EnvName | None = None
 
     @model_validator(mode="after")
     def authentication_contract(self) -> "Provider":
@@ -170,6 +176,25 @@ class MatchingSettings(Contract):
     stale_link_months: PositiveInt
 
 
+class AccessSettings(Contract):
+    lookback_weeks: PositiveInt
+    http_timeout_seconds: Annotated[float, Field(gt=0)]
+    retry_base_seconds: Annotated[float, Field(ge=0)]
+    max_retry_delay_seconds: Annotated[float, Field(ge=0)]
+    stac_page_size: PositiveInt
+    stac_max_pages: PositiveInt
+    optical_max_scene_cloud_percent: Annotated[float, Field(ge=0, le=100)]
+    max_window_pixels: PositiveInt
+    max_process_response_bytes: PositiveInt
+    max_metadata_response_bytes: PositiveInt
+    max_process_dimension_px: PositiveInt
+    radar_time_margin_seconds: Annotated[int, Field(ge=0)]
+    processing_units_header: NonEmpty
+    radar_request_reservation_pu: Annotated[float, Field(gt=0)]
+    keyring_service: NonEmpty
+    token_refresh_fraction: Annotated[float, Field(gt=0, lt=1)]
+
+
 class Settings(Contract):
     schema_version: Literal[1]
     project_name: NonEmpty
@@ -186,6 +211,7 @@ class Settings(Contract):
     images: ImageSettings
     publish: PublishSettings
     matching: MatchingSettings
+    access: AccessSettings
 
     @model_validator(mode="after")
     def indicator_references(self) -> "Settings":

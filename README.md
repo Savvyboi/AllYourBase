@@ -1,10 +1,14 @@
 # AllYourBase
 
 AllYourBase is a local, review-first GEOINT tool for weekly aggregate change
-monitoring with Sentinel-1 and Sentinel-2. This release implements **Phase 0** of
-the supplied build plan: the Python foundation and catalogue validation.
-Imagery retrieval, indicators, scoring, review UI and the Hugo website are future
-milestones. No military site facts or coordinates are seeded from memory.
+monitoring with Sentinel-1 and Sentinel-2. Phase 0 is complete. This version adds
+the **Phase 1 provider-access spike**: discovery, optical window reads, radar
+requests and local usage reports. Eight-week discovery, optical/radar reads and
+measured radar costs now pass for three owner-approved Russian airbase test areas.
+CDSE optical fallback now passes in Google Colab: all 21 band files were
+independently revalidated. Colab is the selected processing runtime; see the
+[validated access notebook](notebooks/README.md). Indicators,
+scoring, review UI and the Hugo website remain future milestones.
 
 Code repository: [Savvyboi/AllYourBase](https://github.com/Savvyboi/AllYourBase).
 Each build-plan phase is proposed through a separate pull request.
@@ -47,6 +51,12 @@ Git metadata and the virtual environment are omitted from the source archive.
 - `run --plan` and `backfill --plan` print a work plan without accessing a provider,
   creating a database or marking any week complete.
 - Ruff, strict mypy, pytest/Hypothesis and pre-commit configuration.
+- `providers doctor` checks metadata and S3 pixel-credential readiness separately;
+  `--online` checks collection access.
+- `providers spike` writes acquisition, window-read, failure and usage reports
+  to the external local workspace. Pixel reads are explicit options.
+- `providers validate-optical` verifies existing optical band files and provenance
+  without making network requests.
 
 The catalogue is intentionally empty. Synthetic examples live only in `fixtures/`
 and are labelled fictional. Add reviewed, cited records under
@@ -63,6 +73,8 @@ uv run allyourbase schemas generate
 uv run allyourbase run --site xxx-example-site --week 2026-W41 --plan
 uv run allyourbase backfill --from 2024-W01 --to 2024-W04 --plan
 uv run allyourbase status
+uv run allyourbase providers doctor --online
+uv run allyourbase providers spike --aoi-file docs/proposals/phase-1-aois.geojson --plan
 ```
 
 Global `--root PATH` selects another project directory. A settings path can be
@@ -73,20 +85,23 @@ implementation milestones. Their help screens describe that limitation.
 ## Configuration and workspace
 
 `config/settings.yaml` holds all thresholds, provider definitions, budgets and
-publishing settings. Values from the plan are provisional; provider coverage,
-quota and request costs still need Phase 1 measurements. No live source or quota
-was verified in this release.
+publishing settings. Primary-provider access and radar request costs have been
+measured for the Russian pilot; see `docs/phase-1-live-validation.md`. Numerical
+analysis thresholds and account quota assumptions remain provisional. CDSE
+optical fallback is verified for the three approved pilot areas. These measurements do not establish global coverage.
 
 `ALLYOURBASE_HOME` overrides the configured workspace; legacy `BASEWATCH_HOME`
 is also supported. When both are set, `ALLYOURBASE_HOME` wins. The default is
 `~/allyourbase-data`, outside this repository. Relative workspace paths are
 resolved against the project root, and paths inside the code repository are
-rejected. Phase 0 only resolves paths; it never creates the workspace.
+rejected. Checks and planning create no state. An actual access spike writes
+its reports, chips and budget ledger under this external workspace.
 
 Only environment variable **names**, never credential values, belong in YAML.
-CDSE credential provisioning will be added in Phase 1. Do not paste secrets
-into the catalogue or commit `.env` files. Large imagery, database and cache
-files are ignored. The public website will be built into a separate repository.
+CDSE OAuth credentials can come from the environment or OS keychain. CDSE S3
+pixel access uses separate environment keys. See `docs/phase-1.md` for local
+setup; `.env` is ignored but not loaded automatically. The public website will
+use a separate repository.
 
 Publishing defaults to `reviewed_only`. `delay_days: 0` is provisional and is
 not a decision to publish anything; the publish command is inactive. Publication
@@ -95,8 +110,10 @@ decisions before Phase 7.
 
 ## Structure and next steps
 
-See `docs/phase-0.md` for completed acceptance criteria, `docs/phase-1.md` for
-the next spike, and `docs/adr/0001-phase-0-foundation.md` for design decisions.
+See the [active build plan](docs/build-plan.md), [updated Word plan](docs/build-plan.docx)
+and [AGENTS.md](AGENTS.md) for completed work, remaining acceptance checks and the
+phase-by-phase roadmap. [Phase 0](docs/phase-0.md), [Phase 1](docs/phase-1.md) and
+[ADRs](docs/adr/) contain the milestone evidence and design decisions.
 The `site/` folder is reserved for Hugo and is not a deployed website.
 
 The code follows [Pydantic's model contracts](https://docs.pydantic.dev/latest/concepts/models/)

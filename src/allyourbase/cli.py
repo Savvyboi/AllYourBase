@@ -12,13 +12,15 @@ from allyourbase import ALGO_VERSION, __version__
 from allyourbase.catalogue.validation import Catalogue, check_catalogue
 from allyourbase.loading import InputError
 from allyourbase.project import Project
+from allyourbase.providers.commands import providers_app
 from allyourbase.schemas import generate_schemas, stale_schemas
 from allyourbase.weeks import ISOWeek, week_range
 
 app = typer.Typer(
     no_args_is_help=True,
     invoke_without_command=True,
-    help="AllYourBase · local Sentinel monitoring (Phase 0)",
+    pretty_exceptions_show_locals=False,
+    help="AllYourBase · local Sentinel monitoring and provider access",
 )
 catalogue_app = typer.Typer(no_args_is_help=True, help="Check human-curated catalogue records.")
 config_app = typer.Typer(
@@ -28,6 +30,7 @@ schemas_app = typer.Typer(no_args_is_help=True, help="Generate or check catalogu
 app.add_typer(catalogue_app, name="catalogue")
 app.add_typer(config_app, name="config")
 app.add_typer(schemas_app, name="schemas")
+app.add_typer(providers_app, name="providers")
 
 
 @dataclass(frozen=True)
@@ -164,7 +167,7 @@ def _work_plan(project: Project, site: str | None, weeks: list[ISOWeek]) -> None
 
 
 def _unimplemented(action: str, phase: str) -> None:
-    typer.echo(f"{action} is not implemented in Phase 0; scheduled for {phase}.", err=True)
+    typer.echo(f"{action} is not implemented yet; scheduled for {phase}.", err=True)
     raise typer.Exit(2)
 
 
@@ -177,9 +180,9 @@ def run(
     ] = None,
     plan: Annotated[bool, typer.Option(help="Validate and print work only; no downloads.")] = False,
 ) -> None:
-    """Weekly processing (reserved). Phase 0 supports only --plan."""
+    """Weekly analysis is reserved; use --plan to inspect the work."""
     if not plan:
-        _unimplemented("Imagery processing", "Phases 1–5")
+        _unimplemented("Weekly imagery analysis", "Phases 3–5")
     _work_plan(_project(ctx), site, [_week(week) if week else _last_completed_week()])
 
 
@@ -193,7 +196,7 @@ def backfill(
         bool, typer.Option(help="Print work without processing or recording state.")
     ] = False,
 ) -> None:
-    """Historical processing (reserved). Phase 0 supports only --plan."""
+    """Historical analysis is reserved; use --plan to inspect the work."""
     if not plan:
         _unimplemented("Backfill", "Phase 4")
     project = _project(ctx)
@@ -221,5 +224,5 @@ def publish() -> None:
 @app.command()
 def status() -> None:
     """Show implementation status; no configuration or credentials are read."""
-    typer.echo("Phase 0: settings, catalogue validation, JSON Schemas and work planning.")
-    typer.echo("Live imagery, scoring, review, website and publishing are not implemented.")
+    typer.echo("Phase 0 foundation and Phase 1 provider diagnostics/access spike.")
+    typer.echo("Weekly analysis, scoring, review, website and publishing are not implemented.")
