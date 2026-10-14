@@ -222,3 +222,14 @@ zone-role gaps and links to staged proposals. Zones and water masks have separat
 staging kinds. All 209 tests and required checks pass. Production approval,
 status/claim dates and dated unit/equipment links remain open. None of the ten
 polygons was accepted, and no new Sentinel imagery was requested.
+
+
+## Review evidence continuation (2026-10-15)
+
+`catalogue packet` now emits packet format version 2 and `review-gaps.json`, with
+snapshot-pinned footprint/zone attachments, identity-source links and a visible
+per-candidate worklist. Active accepted evidence remains available; rejected,
+superseded or unrelated versions cannot supply attachment links. See the
+[mixed-pilot continuation](phase-2-mixed-pilot.md#evidence-link-and-review-gap-continuation-2026-10-15)
+for the retained input checks, refreshed local preview and remaining gaps.
+All 219 tests and required checks pass. Production acceptance remains open.

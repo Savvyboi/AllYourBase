@@ -147,3 +147,163 @@ def test_duplicate_footprint_not_counted_as_two_sites() -> None:
     }
     with pytest.raises(ValidationError, match="duplicate footprint"):
         Selection.model_validate(data)
+
+
+def test_packet_pins_zone_links_to_exact_snapshot(
+    project: Path, tmp_path: Path, spec: SourceSpec
+) -> None:
+    configured, selection, footprints, zones = setup_packet(project, tmp_path, spec)
+    from allyourbase.sources.snapshots import verify_snapshot
+
+    snapshot, payload = verify_snapshot(zones)
+    other_source = snapshot.spec.source.model_copy(update={"id": "unrelated-source"})
+    other_spec = snapshot.spec.model_copy(update={"source": other_source})
+    unrelated = save_snapshot(configured.workspace, other_spec, payload)
+    store = Store(configured.workspace)
+    store.stage(unrelated, MatchSettings())
+    output = tmp_path / "packet"
+    build_packet(configured, selection, footprints, zones, output, "http://127.0.0.1:8768")
+    candidate = json.loads((output / "packet.json").read_text())["candidates"][0]
+    for zone in candidate["zones"]:
+        assert len(zone["proposal_ids"]) == 1
+        assert {entry["snapshot_id"] for entry in zone["evidence"]} == {snapshot.id}
+        assert {entry["source_id"] for entry in zone["evidence"]} == {snapshot.spec.source.id}
+        assert all(entry["locator"] and entry["record_id"] for entry in zone["evidence"])
+
+
+def test_packet_keeps_active_accepted_supporting_records(
+    project: Path, tmp_path: Path, spec: SourceSpec
+) -> None:
+    configured, selection, footprints, zones = setup_packet(project, tmp_path, spec)
+    store = Store(configured.workspace)
+    accepted = [
+        proposal["id"]
+        for proposal in store.proposals()
+        if proposal["content"]["record"]["external_id"] in {"way/1", "way/2"}
+    ]
+    for identifier in accepted:
+        # Only fictional source decisions are used; no production acceptance occurs.
+        store.decide(identifier, "accepted", "synthetic-reviewer", "Fixture decision")
+    output = tmp_path / "packet"
+    build_packet(configured, selection, footprints, zones, output, "http://127.0.0.1:8768")
+    candidate = json.loads((output / "packet.json").read_text())["candidates"][0]
+    assert candidate["footprint_evidence"][0]["state"] == "accepted"
+    assert candidate["zones"][0]["evidence"][0]["state"] == "accepted"
+    assert len(store.proposals("accepted")) == len(accepted)
+
+
+@pytest.mark.parametrize("state", ["rejected", "superseded", "accepted_superseded"])
+def test_packet_flags_unavailable_zone_evidence(
+    project: Path, tmp_path: Path, spec: SourceSpec, state: str
+) -> None:
+    configured, selection, footprints, zones = setup_packet(project, tmp_path, spec)
+    store = Store(configured.workspace)
+    identifier = next(
+        proposal["id"]
+        for proposal in store.proposals()
+        if proposal["content"]["record"]["external_id"] == "way/2"
+    )
+    if state == "rejected":
+        store.decide(identifier, "rejected", "synthetic-reviewer", "Fixture decision")
+    else:
+        if state == "accepted_superseded":
+            store.decide(identifier, "accepted", "synthetic-reviewer", "Old fixture decision")
+        from allyourbase.sources.snapshots import verify_snapshot
+
+        snapshot, payload = verify_snapshot(zones)
+        data = json.loads(payload.read_text())
+        data["features"][0]["properties"]["name"] = "Changed source version"
+        changed = tmp_path / "changed.geojson"
+        changed.write_text(json.dumps(data))
+        store.stage(save_snapshot(configured.workspace, snapshot.spec, changed), MatchSettings())
+    output = tmp_path / "packet"
+    result = build_packet(configured, selection, footprints, zones, output, "http://127.0.0.1:8768")
+    candidate = json.loads((output / "packet.json").read_text())["candidates"][0]
+    assert candidate["zones"][0]["proposal_ids"] == []
+    assert candidate["zones"][0]["evidence"] == []
+    assert candidate["unstaged_source_records"] == ["way/2"]
+    assert result["unstaged_associations"] == 1
+    assert "unstaged_zone_or_mask_evidence" in candidate["missing"]
+
+
+def test_packet_gap_report_is_repeatable_and_read_only(
+    project: Path, tmp_path: Path, spec: SourceSpec
+) -> None:
+    configured, selection, footprints, zones = setup_packet(project, tmp_path, spec)
+    output = tmp_path / "packet"
+    store = Store(configured.workspace)
+    before = store.proposals()
+    result = build_packet(configured, selection, footprints, zones, output, "http://127.0.0.1:8768")
+    report = (output / "review-gaps.json").read_bytes()
+    gaps = json.loads(report)
+    assert gaps["approved"] is False
+    assert gaps["gap_counts"]["crossing_source_geometry"] == 1
+    assert gaps["candidates"][0]["crossing_source_records"] == ["way/3"]
+    assert result["boundary_conflicts"] == 1
+    build_packet(configured, selection, footprints, zones, output, "http://127.0.0.1:8768")
+    assert (output / "review-gaps.json").read_bytes() == report
+    assert store.proposals() == before
+    assert not store.proposals("accepted")
+
+
+def test_packet_honors_zone_record_selectors(
+    project: Path, tmp_path: Path, spec: SourceSpec
+) -> None:
+    configured, selection, footprints, zones = setup_packet(project, tmp_path, spec)
+    from allyourbase.sources.snapshots import verify_snapshot
+
+    snapshot, payload = verify_snapshot(zones)
+    selected_spec = snapshot.spec.model_copy(update={"record_ids": ["way/3"]})
+    filtered = save_snapshot(configured.workspace, selected_spec, payload)
+    Store(configured.workspace).stage(filtered, MatchSettings())
+    output = tmp_path / "packet"
+    build_packet(configured, selection, footprints, filtered, output, "http://127.0.0.1:8768")
+    candidate = json.loads((output / "packet.json").read_text())["candidates"][0]
+    assert [zone["source_record"] for zone in candidate["zones"]] == ["way/3"]
+    assert "compatible_monitoring_zone_geometry_or_role" in candidate["missing"]
+
+
+def test_packet_refuses_duplicate_source_ids(
+    project: Path, tmp_path: Path, spec: SourceSpec
+) -> None:
+    configured, selection, footprints, zones = setup_packet(project, tmp_path, spec)
+    from allyourbase.sources.snapshots import verify_snapshot
+
+    snapshot, payload = verify_snapshot(footprints)
+    data = json.loads(payload.read_text())
+    data["features"].append(data["features"][0])
+    duplicated = tmp_path / "duplicate.geojson"
+    duplicated.write_text(json.dumps(data))
+    manifest = save_snapshot(configured.workspace, snapshot.spec, duplicated)
+    output = tmp_path / "packet"
+    with pytest.raises(InputError, match="duplicate source record"):
+        build_packet(configured, selection, manifest, zones, output, "http://127.0.0.1:8768")
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("state", ["rejected", "superseded"])
+def test_packet_refuses_unavailable_footprint(
+    project: Path, tmp_path: Path, spec: SourceSpec, state: str
+) -> None:
+    configured, selection, footprints, zones = setup_packet(project, tmp_path, spec)
+    store = Store(configured.workspace)
+    identifier = next(
+        proposal["id"]
+        for proposal in store.proposals()
+        if proposal["content"]["record"]["external_id"] == "way/1"
+    )
+    if state == "rejected":
+        store.decide(identifier, "rejected", "synthetic-reviewer", "Fixture decision")
+    else:
+        from allyourbase.sources.snapshots import verify_snapshot
+
+        snapshot, payload = verify_snapshot(footprints)
+        data = json.loads(payload.read_text())
+        data["features"][0]["properties"]["name"] = "Replacement footprint"
+        changed = tmp_path / "replacement.geojson"
+        changed.write_text(json.dumps(data))
+        store.stage(save_snapshot(configured.workspace, snapshot.spec, changed), MatchSettings())
+    output = tmp_path / "packet"
+    with pytest.raises(InputError, match="active and staged"):
+        build_packet(configured, selection, footprints, zones, output, "http://127.0.0.1:8768")
+    assert not output.exists()

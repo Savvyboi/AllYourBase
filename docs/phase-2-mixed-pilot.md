@@ -116,3 +116,43 @@ files; the earlier pinned Phase 1 archive is preserved.
 Phase 2 stays open until the owner reviews actual site/zone geometry and sourced,
 dated unit/equipment links satisfy `catalogue readiness`. Scope approval alone
 does not approve the selected polygons, source classifications or facts.
+
+
+## Evidence-link and review-gap continuation (2026-10-15)
+
+Packet format version 2 pins every footprint and zone/mask queue link to its
+exact verified input snapshot and semantic source record. Each attachment names
+the proposal, source, snapshot, record, locator and decision state. Active
+accepted source records remain available as supporting evidence. Rejected,
+superseded or unrelated-source records cannot supply a link, even when their
+external IDs match. A selected footprint without eligible staged evidence stops
+packet generation; unavailable zone evidence stays visible as an explicit gap.
+Source record selectors are honored and duplicate input IDs are refused.
+
+The preview now shows identity-source queue links and open review tasks, and each
+zone/mask has its own review link. A new `review-gaps.json` lists per-candidate
+missing evidence, crossing source IDs and unlinked records, with aggregate gap
+counts. It is a worklist, not an approval or an acceptance bundle. The existing
+`catalogue packet` command produces all five artifacts; it makes no decisions.
+
+The retained inputs were reprocessed into the separate external folder
+`review/mixed-pilot-evidence-20261015/`, preserving the original packet and source
+snapshots. All 77 associations link to exact staged evidence, with zero unlinked
+zone/mask associations. The same five boundary conflicts affect two candidates;
+four candidates lack a contained source zone with a compatible configured role.
+Every candidate still needs identity/location, boundary/zone, status/date and
+dated historical unit/equipment evidence review. No gaps were resolved by
+clipping polygons, inventing dates or treating source labels as reviewed facts.
+
+The refreshed preview is served at http://127.0.0.1:8769/preview.html; its links
+use the existing queue at http://127.0.0.1:8768. Both are loopback services and
+need restarting after their processes stop.
+
+Verification: 219 tests and all required project checks pass. Regression cases
+cover external-ID collisions across sources, accepted and stale accepted
+supporting records, rejected/superseded footprints and zones, selected source
+records, duplicate IDs and repeatable read-only gap reports. Browser QA checked
+all ten candidates, all 77 zone links, identity links, JSON download, search and a
+zone deep link, with no JavaScript errors or 375 px overflow. Desktop/mobile
+screenshots were visually inspected. Full QA and generated files remain outside
+Git. Production catalogue and decisions are unchanged; Phase 2 remains open.
