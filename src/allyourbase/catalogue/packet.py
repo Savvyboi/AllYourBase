@@ -14,7 +14,7 @@ from allyourbase.models.common import Contract, CountryCode, NonEmpty, Slug
 from allyourbase.models.geometry import Geometry, anchor_of, shape_on_anchor
 from allyourbase.project import Project
 from allyourbase.sources.connectors import parse_records
-from allyourbase.sources.contracts import Record
+from allyourbase.sources.contracts import Record, Snapshot
 from allyourbase.sources.snapshots import verify_snapshot
 from allyourbase.sources.store import Store
 
@@ -50,6 +50,57 @@ def _shape(record: Record, anchor: float) -> Any:
     return shape_on_anchor(geometry, anchor)
 
 
+def _records(snapshot: Snapshot, payload: Path) -> dict[str, Record]:
+    selected = set(snapshot.spec.record_ids)
+    records: dict[str, Record] = {}
+    for record in parse_records(snapshot, payload):
+        if selected and record.external_id not in selected:
+            continue
+        if record.external_id in records:
+            raise InputError("duplicate source record ID in packet input")
+        records[record.external_id] = record
+    return records
+
+
+def _proposal_index(store: Store, external_ids: set[str]) -> dict[str, list[dict[str, Any]]]:
+    """Keep active pending/accepted records; external IDs alone never establish evidence."""
+    index: dict[str, list[dict[str, Any]]] = {}
+    for state in ("pending", "accepted"):
+        for summary in store.proposals(state):
+            record = summary["content"].get("record")
+            if not record or record["external_id"] not in external_ids:
+                continue
+            proposal = store.proposal(summary["id"])
+            if proposal["active"] and proposal["state"] in {"pending", "accepted"}:
+                index.setdefault(record["external_id"], []).append(proposal)
+    return index
+
+
+def _evidence(
+    proposals: list[dict[str, Any]], record: Record, snapshot: Snapshot
+) -> list[dict[str, Any]]:
+    result = []
+    semantic = record.model_dump(mode="json", exclude={"locator"})
+    for proposal in proposals:
+        staged = Record.model_validate(proposal["content"]["record"])
+        if staged.model_dump(mode="json", exclude={"locator"}) != semantic:
+            continue
+        for entry in proposal["evidence"]:
+            if entry["manifest"] != snapshot.model_dump(mode="json"):
+                continue
+            result.append(
+                {
+                    "proposal_id": proposal["id"],
+                    "record_id": entry["record_id"],
+                    "source_id": snapshot.spec.source.id,
+                    "snapshot_id": snapshot.id,
+                    "locator": entry["locator"],
+                    "state": proposal["state"],
+                }
+            )
+    return result
+
+
 def build_packet(
     project: Project,
     selection_path: Path,
@@ -77,14 +128,18 @@ def build_packet(
     for definition in selection.sites:
         if definition.site_type not in project.settings.primary_indicators:
             raise InputError("candidate site type is not configured")
-    footprints = {r.external_id: r for r in parse_records(footprint_snapshot, footprint_payload)}
-    zone_records = [r for r in parse_records(zone_snapshot, zone_payload) if r.geometry is not None]
-    proposals = Store(project.workspace).proposals()
-    by_record: dict[str, list[str]] = {}
-    for proposal in proposals:
-        record = proposal["content"].get("record")
-        if record:
-            by_record.setdefault(record["external_id"], []).append(proposal["id"])
+    if any(s.spec.connector != "osm" for s in (footprint_snapshot, zone_snapshot)):
+        raise InputError("source-geometry packets require OSM footprint and zone inputs")
+    footprints = _records(footprint_snapshot, footprint_payload)
+    zone_records = [
+        record
+        for record in _records(zone_snapshot, zone_payload).values()
+        if record.geometry is not None and record.kind in {"zone", "mask"}
+    ]
+    external_ids = {record.external_id for record in zone_records}
+    for candidate in selection.sites:
+        external_ids.update([candidate.source_record, *candidate.identity_records])
+    by_record = _proposal_index(Store(project.workspace), external_ids)
     candidates = []
     for selected in selection.sites:
         footprint = footprints.get(selected.source_record)
@@ -110,6 +165,7 @@ def build_packet(
                 if attributes.get("man_made") == "pier"
                 else "parking_candidate"
             )
+            evidence = _evidence(by_record.get(record.external_id, []), record, zone_snapshot)
             zones.append(
                 {
                     "source_record": record.external_id,
@@ -117,16 +173,20 @@ def build_packet(
                     "contained": bool(area.covers(other)),
                     "geometry": record.geometry,
                     "attributes": attributes,
-                    "proposal_ids": by_record.get(record.external_id, []),
+                    "proposal_ids": sorted({entry["proposal_id"] for entry in evidence}),
+                    "evidence": evidence,
                 }
             )
-        footprint_proposals = []
-        for proposal_id in by_record.get(selected.source_record, []):
-            proposal = Store(project.workspace).proposal(proposal_id)
-            if any(e["manifest"]["id"] == footprint_snapshot.id for e in proposal["evidence"]):
-                footprint_proposals.append(proposal_id)
+        footprint_evidence = _evidence(
+            by_record.get(selected.source_record, []), footprint, footprint_snapshot
+        )
+        footprint_proposals = sorted({entry["proposal_id"] for entry in footprint_evidence})
         if not footprint_proposals:
-            raise InputError("selected source footprint must be staged in the review queue")
+            raise InputError(
+                "selected source footprint must be active and staged in the review queue"
+            )
+        conflicts = [zone["source_record"] for zone in zones if not zone["contained"]]
+        unstaged = [zone["source_record"] for zone in zones if not zone["evidence"]]
         primary_zone_types = sorted(
             {
                 zone_type
@@ -145,19 +205,31 @@ def build_packet(
                 "compatible_source_zone": compatible,
                 "zones": zones,
                 "proposal_ids": footprint_proposals,
+                "footprint_evidence": footprint_evidence,
+                "crossing_source_records": conflicts,
+                "unstaged_source_records": unstaged,
                 "identity_proposals": {
-                    key: by_record.get(key, []) for key in selected.identity_records
+                    key: [
+                        proposal["id"]
+                        for proposal in by_record.get(key, [])
+                        if proposal["content"]["record"]["kind"] == "site"
+                        and proposal["content"]["record"]["country"] == selection.country
+                    ]
+                    for key in selected.identity_records
                 },
                 "missing": [
+                    "owner_identity_and_location_review",
                     "owner_geometry_and_zone_review",
                     "sourced_status_and_claim_dates",
                     "dated_unit_and_equipment_links",
                 ]
-                + ([] if compatible else ["compatible_monitoring_zone_geometry_or_role"]),
+                + ([] if compatible else ["compatible_monitoring_zone_geometry_or_role"])
+                + (["crossing_source_geometry"] if conflicts else [])
+                + (["unstaged_zone_or_mask_evidence"] if unstaged else []),
             }
         )
     packet = {
-        "schema_version": 1,
+        "schema_version": 2,
         "approved": False,
         "selection": selection.model_dump(mode="json"),
         "candidates": candidates,
@@ -169,10 +241,46 @@ def build_packet(
         "notice": "Unapproved source geometry and tentative classifications. "
         "Mapped features are not a complete base inventory or proof of current deployments.",
     }
+    gap_counts: dict[str, int] = {}
+    gaps = []
+    for item in candidates:
+        for gap in item["missing"]:
+            gap_counts[gap] = gap_counts.get(gap, 0) + 1
+        gaps.append(
+            {
+                "candidate_id": item["id"],
+                "name": item["name"],
+                "missing": item["missing"],
+                "crossing_source_records": item["crossing_source_records"],
+                "unstaged_source_records": item["unstaged_source_records"],
+                "identity_proposals": item["identity_proposals"],
+                "footprint_evidence": item["footprint_evidence"],
+            }
+        )
+    gap_report = {
+        "schema_version": 1,
+        "approved": False,
+        "candidate_sites": len(candidates),
+        "gap_counts": dict(sorted(gap_counts.items())),
+        "candidates": gaps,
+        "notice": "Review worklist only; this report makes no catalogue decisions.",
+    }
     output.mkdir(parents=True, exist_ok=True)
+    (output / "review-gaps.json").write_text(
+        json.dumps(gap_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     (output / "packet.json").write_text(
         json.dumps(packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
+    gap_labels = {
+        "owner_identity_and_location_review": "identity/location review",
+        "owner_geometry_and_zone_review": "boundary/zone review",
+        "sourced_status_and_claim_dates": "dated status evidence",
+        "dated_unit_and_equipment_links": "dated historical unit/equipment evidence",
+        "compatible_monitoring_zone_geometry_or_role": "compatible zone geometry/role",
+        "crossing_source_geometry": "crossing polygons",
+        "unstaged_zone_or_mask_evidence": "unlinked source evidence",
+    }
     lines = [
         "# Mixed Russian pilot review packet",
         "",
@@ -185,22 +293,25 @@ def build_packet(
         "",
         (
             "| Candidate | Proposed type | Source footprint | "
-            "Contained zone/mask polygons | Review gaps |"
+            "Contained zone/mask polygons | Boundary conflicts | Review gaps |"
         ),
-        "| --- | --- | --- | --- | --- |",
+        "| --- | --- | --- | --- | --- | --- |",
     ]
     for item in candidates:
         contained = sum(z["contained"] for z in item["zones"])
         lines.append(
             f"| {item['name']} | {item['site_type']} | "
             f"[{item['source_record']}](https://www.openstreetmap.org/{item['source_record']}) | "
-            f"{contained} | geometry, classification, status/dates, unit/equipment links |"
+            f"{contained} | {len(item['crossing_source_records'])} | "
+            + ", ".join(gap_labels[gap] for gap in item["missing"])
+            + " |"
         )
     lines += [
         "",
         (
             "The geometry preview and source notes are in preview.html; "
-            "exact hashes and proposal IDs are in packet.json."
+            "exact hashes and proposal IDs are in packet.json; "
+            "per-candidate gaps are in review-gaps.json."
         ),
         "",
         (
@@ -258,6 +369,9 @@ def build_packet(
         "source_polygons": len(candidates),
         "zone_or_mask_associations": sum(len(item["zones"]) for item in candidates),
         "contained_associations": sum(z["contained"] for item in candidates for z in item["zones"]),
+        "boundary_conflicts": sum(len(item["crossing_source_records"]) for item in candidates),
+        "unstaged_associations": sum(len(item["unstaged_source_records"]) for item in candidates),
+        "gap_counts": gap_report["gap_counts"],
         "approved": False,
         "output": str(output),
     }

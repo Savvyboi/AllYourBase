@@ -1,6 +1,7 @@
 # AllYourBase agent guide and build plan
 
-Updated 2026-10-14 (Europe/Helsinki). This file applies to the whole repository.
+Updated 2026-10-15 (Europe/Helsinki), after the Phase 2 packet evidence continuation. This file applies to
+the whole repository.
 
 ## Purpose and authoritative records
 
@@ -43,43 +44,80 @@ Use [Phase 1 setup](docs/phase-1.md),
 - Successful radar Process calls each reported 3.067035675 PU. Charges for
   failed/debug attempts were retained. These are measurements for these requests,
   not an account-wide quota or a guaranteed future cost.
-- Phase 2 workflow is implemented: immutable source snapshots, permission-gated
-  connectors/PDF extraction, DuckDB staging, candidate matching and a loopback
-  catalogue review app with validated, recoverable YAML/GeoJSON acceptance.
-  See [Phase 2](docs/phase-2.md) and [ADR 0003](docs/adr/0003-catalogue-ingestion.md).
-  Live OurAirports/Wikidata imports produced 31 site records; repeating either
-  retained snapshot produces zero new proposals. Supporting evidence attachments
-  and a separate milestone-readiness report are implemented. All source records
-  remain unapproved; production catalogue acceptance is still open.
+- Phase 2 implementation is merged: [PR #3](https://github.com/Savvyboi/AllYourBase/pull/3)
+  at 2d8135f added source ingestion and review;
+  [PR #4](https://github.com/Savvyboi/AllYourBase/pull/4) at b97c9c6 added supporting
+  evidence and readiness checks; [PR #5](https://github.com/Savvyboi/AllYourBase/pull/5)
+  at 378ee08 added native Overpass geometry and the mixed-pilot review packet.
+  Immutable snapshots, permission-gated connectors/PDF extraction, DuckDB staging,
+  candidate matching and the loopback review app are implemented, including
+  validated, recoverable YAML/GeoJSON acceptance. See [Phase 2](docs/phase-2.md)
+  and [ADR 0003](docs/adr/0003-catalogue-ingestion.md).
+  Live OurAirports/Wikidata imports produced 31 site records; repeating retained
+  snapshots produces zero new proposals. All source records remain unapproved;
+  production catalogue acceptance is still open.
 - The owner confirmed the mix of all Russian military base types on 2026-10-14.
   Native OSM discovery retained 18,568 tagged features (not a count of bases).
   The first mixed review packet has ten source footprints: four airbases, three
   naval facilities and three ground-garrison candidates. Its 77 zone/mask
   associations include 72 contained polygons and five boundary conflicts.
-  See [mixed-pilot evidence](docs/phase-2-mixed-pilot.md) and the selection under
-  docs/proposals/rus-mixed-pilot.yaml. All remain unapproved; status/dates and
-  dated unit/equipment links are still missing. The active queue has 185 records,
-  not 185 distinct bases. Repeat finalized imports produce zero new proposals.
-- Last verified code checks: 209 pytest/Hypothesis tests, Ruff, format, strict
+  See [mixed-pilot evidence](docs/phase-2-mixed-pilot.md) and the
+  [selection](docs/proposals/rus-mixed-pilot.yaml). This is the first review batch;
+  the broader scope is not an exhaustive completed inventory. All ten candidates
+  remain unapproved; status/claim dates, zone roles and dated unit/equipment links
+  are still open. The active queue has 185 record proposals: 41 site records,
+  80 zone candidates and 64 masks, with three superseded versions retained.
+  Site records may duplicate physical facilities. Repeat finalized footprint and
+  zone imports produce zero new proposals.
+- Phase 2 packet evidence continuation pins footprint and zone queue links to
+  exact verified snapshots, retains active accepted supporting records and flags
+  rejected/superseded/unlinked evidence. Packet format is now version 2, with a
+  per-candidate `review-gaps.json` and visible identity/zone links and review tasks.
+  The refreshed external packet is under `review/mixed-pilot-evidence-20261015/`;
+  all 77 associations have exact staged evidence. Five boundary conflicts across
+  two candidates and four compatible-zone gaps remain. Production decisions and
+  the original packet/snapshots are unchanged.
+- Last verified code checks: 219 pytest/Hypothesis tests, Ruff, format, strict
   mypy, settings/catalogue/schema checks and all five pre-commit hooks pass.
-- Production catalogue is empty. The approved test windows are separate from
-  production geometry and contain no established unit/equipment claims.
+  Browser QA covered all ten previews, search, layers and queue links; desktop
+  and 375 px mobile checks found no JavaScript errors or horizontal overflow.
+- Production catalogue has zero sites, units, equipment and sources; readiness
+  remains false. No production proposal was accepted or rejected. The approved
+  Phase 1 access windows are separate from production geometry and contain no
+  established unit/equipment claims. No new Sentinel requests were made for the
+  mixed packet.
 - Package version is 0.3.0; algo_version is 0.0.0 because analysis is not implemented.
   run/backfill execution, scoring, event review, Hugo and publishing remain reserved.
 
 ## Immediate continuation
 
-1. Phase 1 is merged. Preserve its measured acceptance evidence; do not repeat
-   imagery requests merely to verify documentation.
-2. Continue Phase 2 production review using the new source workflow. The external
-   phase2-data workspace contains the mixed pilot packet and 185 active records.
-   Wikidata/OSM scope can include uncertain identities and locations;
-   review location/identity and duplicates before selecting production sites. Gather
-   permitted polygon/zone sources and dated unit/equipment claims, then expand to
-   at least ten Russian sites across the required types for owner review. Source
-   points and approved access-test squares are not production boundaries. Keep
-   the milestone incomplete until the production acceptance criteria pass.
-3. Google Colab is the selected processing runtime. The thin Phase 1 notebook has
+1. Preserve the merged Phase 1 and Phase 2 evidence. Do not repeat imagery
+   requests merely to verify documentation, or start Phase 3 as if catalogue
+   acceptance were complete.
+2. Continue review of the existing ten-candidate mixed batch in the external
+   sibling workspace `../phase2-data`. Its packet is under
+   `review/mixed-pilot/`: `review-packet.md`, `packet.json`, `preview.html` and
+   `source-polygons.geojson`. The national inventory CSV supports later expansion.
+   Use the refreshed packet under `review/mixed-pilot-evidence-20261015/`, including
+   its `review-gaps.json`. Its preview is http://127.0.0.1:8769/preview.html and the
+   review queue is http://127.0.0.1:8768; restart those services if needed. The preview
+   is read-only. Scope approval does not approve geometry, classifications or facts.
+3. Resolve the recorded identity and geometry gaps before accepting sites:
+   Gromovo is an unnamed parcel near two Wikidata records; Gadzhiyevo has an
+   explicitly estimated outline. Olenya has three crossing zone/mask polygons
+   and Gadzhiyevo has two. Novorossiysk lacks a contained pier/anchorage candidate;
+   one ground parcel has no mapped zone, and parking tags do not establish
+   military vehicle use. Inspect location, source scope and duplicates, including
+   whether separately mapped parcels belong to one facility. Source points and
+   approved access-test squares are not production boundaries.
+4. Obtain permitted sources for status/claim dates and dated unit garrison and
+   equipment links, then prepare sourced review bundles for owner decisions.
+   Ground-unit labels alone do not establish an association or current deployment.
+   Re-run `catalogue readiness --country RUS --minimum-sites 10 --require-type airbase --require-type naval_base --require-type garrison`
+   after production acceptance. Keep Phase 2 incomplete until ten or more
+   reviewed production sites, all required types, approved zones and retained
+   provenance with overlapping dated unit/equipment links satisfy acceptance.
+5. Google Colab is the selected processing runtime. The thin Phase 1 notebook has
    been exercised successfully. Full processing still needs the resumable results
    store, VM-local DB, checkpoint sync and shared one-writer lock. Keep secret
    values in Colab Secrets, with notebook access enabled; never ask for values
@@ -95,13 +133,14 @@ bytes and range-request counts remain unknown.
 ## Build plan and acceptance sequence
 
 Implement milestones in order and use a separate reviewable PR per phase.
-Phases 0–1 are merged. Phase 2 workflow passes; production acceptance remains open.
+Phases 0–1 and Phase 2 implementation PRs #3–#5 are merged. Phase 2 production
+acceptance remains open.
 
 | Phase | Current status | Next work and acceptance |
 | --- | --- | --- |
 | 0 Foundation | Complete, merged | Preserve strict contracts, schema generation, catalogue integrity and planning without side effects. Required CLI commands and checks already pass. |
 | 1 Data access | Complete, merged in PR #2 | Eight-week provider tables, Earth Search/CDSE optical windows, valid radar chips, measured radar usage and provider choice are verified. Preserve measured evidence. |
-| 2 Catalogue and ingestion | Ingestion and review workflow implemented; production acceptance open | Import OSM/Wikidata/OurAirports/GeoNames with immutable manifests; extract permitted PDFs; add DuckDB staging, normalization, geocoding, matching and proposals; build review queue. Acceptance: 10+ reviewed Russian production sites with sourced links, idempotent ingestion and correct zone preview. |
+| 2 Catalogue and ingestion | Workflow and ten-candidate mixed packet merged; zero approved production sites | Review the existing mixed batch, resolve identity/boundary/zone-role gaps and collect dated unit/equipment evidence. Acceptance: 10+ reviewed Russian production sites across airbase, naval_base and garrison, with sourced dated links, idempotent ingestion and correct approved zone preview; milestone readiness must pass. |
 | 3 Preprocessing and indicators | Radar grid/discovery prototypes only | Finish global grids, resampling, persistent cache, masks, alignment and all configured indicators. Acceptance: synthetic/golden correctness and measured run timing under five minutes cold, one minute cached. Targets are not achieved claims. |
 | 4 Backfill and baselines | Not implemented | Resumable processing from 2024-W01, catch-up, late scenes, seasonal baselines and warm-up. Acceptance: 52+ weeks per pilot site plus data-gap report. Planning is not processing. |
 | 5 Scoring events images review | Not implemented | Explainable levels/direction/confidence/drivers, merging, image pairs and durable local review decisions. Acceptance: event images <=40 KB and decisions survive restart. |
@@ -114,8 +153,9 @@ Phases 0–1 are merged. Phase 2 workflow passes; production acceptance remains 
 
 Keep catalogue proposals/decisions and raw sources in the external workspace. Local
 workflow locking and recoverable acceptance are implemented; shared Colab/Drive
-checkpointing and locks remain Phase 7a work. Native Overpass OSM import and geometry preview pass. Native osmium and live GeoNames/
-Geofabrik imports still need validation. The basic transliteration is not full BGN/PCGN.
+checkpointing and locks remain Phase 7a work. Native Overpass OSM import and
+geometry preview pass. Native osmium and live GeoNames/Geofabrik imports still
+need validation. The basic transliteration is not full BGN/PCGN.
 
 Phase 2 includes site/unit/equipment/source/taxonomy provenance, dated garrison
 and equipment links, reusable source classification and human-approved zones.
@@ -136,8 +176,9 @@ account. The three approved access windows do not decide these later questions.
 - Use allyourbase as package/CLI; basewatch remains a compatibility alias.
   ALLYOURBASE_HOME overrides BASEWATCH_HOME and the configured external workspace.
 - Resolve all workspace paths through Project. Never allow a data workspace inside
-  the code repository. This development session used the sibling phase1-data
-  folder; do not hard-code a developer's absolute path into package code.
+  the code repository. This development session uses sibling phase1-data for
+  provider evidence and phase2-data for snapshots, the staging DB and review
+  packets; do not hard-code a developer's absolute path into package code.
 - Keep country/site names, coordinates, unit/equipment facts and thresholds out of
   algorithms. Use sourced catalogue/configuration data; never invent facts from memory.
 - No named individuals or personal data in the catalogue. Keep citations, reuse
