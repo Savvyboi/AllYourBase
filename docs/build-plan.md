@@ -5,7 +5,7 @@ Updated 2026-10-14 (Europe/Helsinki).
 AllYourBase will run Sentinel processing in Google Colab and publish reviewed results to
 a separate static GitHub Pages repository. Phase 0 is merged. Phase 1 has verified
 primary optical, CDSE optical fallback and radar access for the approved Russian
-pilot. Access acceptance passes and PR #2 awaits code review. No activity analysis or website
+pilot. Phase 1 is merged in PR #2. No activity analysis or website
 has been implemented.
 
 The [Word plan snapshot](build-plan.docx) preserves the original detailed design
@@ -23,8 +23,8 @@ current implementation status and the next work. The repository
 | Approved test scope | Chkalovskiy, Engels and Olenya; 4 km windows derived from pinned OurAirports records. Owner approved the locations and live checks on 2026-10-14, replacing the original three-country spike. |
 | Live evidence | 2026-W34 through W41; 96 site/provider/week rows across four catalogues contain acquisitions. Earth Search and CDSE optical each produced 21 verified band TIFFs; CDSE radar produced three validated four-band 10 m TIFFs. The Colab fallback also produced 24 successful site/week rows. |
 | Measured radar usage | Each successful 401 by 401 radar Process call reported 3.067035675 PU. Three successful chips used 9.201107025 PU plus 0.06 catalogue PU. The entire debug/test session used 21.469249725 Process PU plus 0.18 catalogue PU. |
-| Verification | 147 pytest/Hypothesis tests, Ruff, formatting, strict mypy, settings/catalogue/schema checks and all five pre-commit hooks pass. Generated radar JavaScript was executed against representative samples and metadata. |
-| Phase 2 contracts | Catalogue and taxonomy contracts/schemas exist from Phase 0. Production catalogue is empty; source ingestion, matching and the review queue are not implemented. |
+| Verification | 174 pytest/Hypothesis tests, Ruff, formatting, strict mypy, settings/catalogue/schema checks and all five pre-commit hooks pass. Generated radar JavaScript was executed against representative samples and metadata. |
+| Phase 2 workflow | Immutable snapshots, source-reuse enforcement, DuckDB staging, matching/geocoding proposals, permitted PDF page/rule extraction and a local catalogue review UI/CLI are implemented. Three live OurAirports proposals; unchanged import produces zero new proposals. Production catalogue remains empty. |
 | Phase 3 prototypes | Radar request grids and antimeridian discovery splitting exist and have synthetic coverage. Shared preprocessing, persistent chip cache, masks, alignment and indicators are not implemented. |
 
 Detailed evidence: [implementation verification](phase-1-validation.md),
@@ -38,12 +38,11 @@ boundaries or a production monitoring catalogue.
 
 ## Immediate next steps
 
-1. Complete code review of [PR #2](https://github.com/Savvyboi/AllYourBase/pull/2).
-   Phase 1 live access acceptance now passes, including the independently
-   revalidated Colab CDSE optical fallback. Do not merge without review.
-2. Start Phase 2 ingestion/review after Phase 1 review. Build a sourced Russian
-   production catalogue without treating the three test windows as surveyed base
-   boundaries or asserting units/equipment from memory. Use a separate phase PR.
+1. Phase 1 is merged. Preserve the existing access evidence.
+2. Continue [Phase 2 production review](phase-2.md). Gather permitted geometry and
+   dated unit/equipment sources; review at least ten Russian sites across the
+   required site types. The workflow is implemented, but three source points do
+   not establish production sites, zones or military unit/equipment claims.
 3. Continue processing through Colab as selected by the owner. Its Phase 1 access
    notebook is exercised; full processing still needs a resumable results store,
    VM-local working DB, checkpoint sync and a shared one-writer lock.
@@ -78,7 +77,7 @@ Acceptance passed in PR #1. `allyourbase` is the primary CLI;
   explicit gaps and measured radar usage.
 - [x] CDSE optical window reads using separate S3 credentials in Colab; all 21 files independently revalidated.
 - [x] Record fallback evidence and finalize provider choice in ADR 0002.
-- [ ] Complete code review of PR #2.
+- [x] PR #2 merged at f700c1a on 2026-10-14.
 
 Acceptance: reproducible per-site/provider/week acquisition tables, optical
 reads from Earth Search and CDSE, valid radar chip metadata, measured costs and
@@ -88,15 +87,19 @@ live testing with this Russian pilot; synthetic global-geometry checks remain.
 ### Phase 2 Catalogue source ingestion and taxonomy
 
 - [x] Models and JSON Schemas for sites, units, equipment, sources and taxonomy.
-- [ ] OSM/Geofabrik, Wikidata, OurAirports and GeoNames import connectors with
+- [x] OSM/Geofabrik, Wikidata, OurAirports and GeoNames import connectors with
   immutable source snapshots and manifests.
-- [ ] PDF extraction with page references for permitted reference-class sources.
-- [ ] DuckDB staging, name/designation normalization, geocoding, deduplication,
+- [x] PDF extraction with page references for permitted reference-class sources.
+- [x] DuckDB staging, name/designation normalization, geocoding, deduplication,
   matching and link proposals.
-- [ ] Local catalogue review queue; accepted edits written with provenance and
+- [x] Local catalogue review queue; accepted edits written with provenance and
   rejected proposals remembered.
 - [ ] At least 10 reviewed Russian production sites across airbases, naval bases
   and garrisons, with sourced unit/equipment links and reviewed zones.
+
+Workflow checks pass; native osmium and live sources beyond OurAirports remain
+unverified. Basic Cyrillic matching keys are implemented; full contextual BGN/PCGN
+transliteration is deferred. See [Phase 2 evidence and limitations](phase-2.md).
 
 Acceptance: `catalogue check` passes; every fact traces to a snapshot or cited
 page; unchanged ingestion creates no new proposals; a preview map displays zones

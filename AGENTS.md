@@ -26,7 +26,7 @@ Use [Phase 1 setup](docs/phase-1.md),
 - Phase 0 is complete and merged in PR #1. The Python 3.12/uv foundation, strict
   models, six JSON Schemas, catalogue checking, UTC ISO-week planning and CLI
   command surface are implemented.
-- PR #2 contains Phase 1 and awaits code review. Earth Search optical, CDSE
+- PR #2 is merged at f700c1a. Earth Search optical, CDSE
   optical fallback and CDSE Sentinel Hub radar access pass for the approved pilot.
 - The Colab optical run 20261013T234356Z-1737c37ff296467c979cd05e9ab00b63
   produced 21 verified CDSE band TIFFs and 24 successful site/week rows. Local
@@ -43,22 +43,29 @@ Use [Phase 1 setup](docs/phase-1.md),
 - Successful radar Process calls each reported 3.067035675 PU. Charges for
   failed/debug attempts were retained. These are measurements for these requests,
   not an account-wide quota or a guaranteed future cost.
-- Last verified code checks: 147 pytest/Hypothesis tests, Ruff, format, strict
+- Phase 2 workflow is implemented: immutable source snapshots, permission-gated
+  connectors/PDF extraction, DuckDB staging, candidate matching and a loopback
+  catalogue review app with validated, recoverable YAML/GeoJSON acceptance.
+  See [Phase 2](docs/phase-2.md) and [ADR 0003](docs/adr/0003-catalogue-ingestion.md).
+  The live pinned OurAirports import produced three proposals, then zero on repeat.
+  They remain unapproved; production catalogue acceptance is still open.
+- Last verified code checks: 174 pytest/Hypothesis tests, Ruff, format, strict
   mypy, settings/catalogue/schema checks and all five pre-commit hooks pass.
 - Production catalogue is empty. The approved test windows are separate from
   production geometry and contain no established unit/equipment claims.
-- Package version is 0.2.0; algo_version is 0.0.0 because analysis is not implemented.
-  run/backfill execution, scoring, review UI, Hugo and publishing remain reserved.
+- Package version is 0.3.0; algo_version is 0.0.0 because analysis is not implemented.
+  run/backfill execution, scoring, event review, Hugo and publishing remain reserved.
 
 ## Immediate continuation
 
-1. Complete code review of PR #2. Phase 1 live access acceptance now passes for
-   the approved Russian pilot, including CDSE optical S3 fallback from Colab.
-   Do not repeat imagery requests just to verify documentation; use the retained
-   external evidence and providers validate-optical. Do not merge without review.
-2. Continue with Phase 2 source ingestion and catalogue review after Phase 1
-   review. Do not confuse existing schemas or access-test windows with a completed
-   production catalogue. Keep the next milestone in its own reviewable PR.
+1. Phase 1 is merged. Preserve its measured acceptance evidence; do not repeat
+   imagery requests merely to verify documentation.
+2. Continue Phase 2 production review using the new source workflow. The external
+   phase2-data workspace contains three unapproved OurAirports proposals. Gather
+   permitted polygon/zone sources and dated unit/equipment claims, then expand to
+   at least ten Russian sites across the required types for owner review. Source
+   points and approved access-test squares are not production boundaries. Keep
+   the milestone incomplete until the production acceptance criteria pass.
 3. Google Colab is the selected processing runtime. The thin Phase 1 notebook has
    been exercised successfully. Full processing still needs the resumable results
    store, VM-local DB, checkpoint sync and shared one-writer lock. Keep secret
@@ -75,13 +82,13 @@ bytes and range-request counts remain unknown.
 ## Build plan and acceptance sequence
 
 Implement milestones in order and use a separate reviewable PR per phase.
-Phase 1 access acceptance passes; code review is the remaining phase gate.
+Phases 0–1 are merged. Phase 2 workflow passes; production acceptance remains open.
 
 | Phase | Current status | Next work and acceptance |
 | --- | --- | --- |
 | 0 Foundation | Complete, merged | Preserve strict contracts, schema generation, catalogue integrity and planning without side effects. Required CLI commands and checks already pass. |
-| 1 Data access | Pilot access acceptance passes; code review pending | Eight-week provider tables, Earth Search/CDSE optical windows, valid radar chips, measured radar usage and provider choice are verified. Review PR #2 before closing the phase. |
-| 2 Catalogue and ingestion | Contracts/schemas done; ingestion not started | Import OSM/Wikidata/OurAirports/GeoNames with immutable manifests; extract permitted PDFs; add DuckDB staging, normalization, geocoding, matching and proposals; build review queue. Acceptance: 10+ reviewed Russian production sites with sourced links, idempotent ingestion and correct zone preview. |
+| 1 Data access | Complete, merged in PR #2 | Eight-week provider tables, Earth Search/CDSE optical windows, valid radar chips, measured radar usage and provider choice are verified. Preserve measured evidence. |
+| 2 Catalogue and ingestion | Ingestion and review workflow implemented; production acceptance open | Import OSM/Wikidata/OurAirports/GeoNames with immutable manifests; extract permitted PDFs; add DuckDB staging, normalization, geocoding, matching and proposals; build review queue. Acceptance: 10+ reviewed Russian production sites with sourced links, idempotent ingestion and correct zone preview. |
 | 3 Preprocessing and indicators | Radar grid/discovery prototypes only | Finish global grids, resampling, persistent cache, masks, alignment and all configured indicators. Acceptance: synthetic/golden correctness and measured run timing under five minutes cold, one minute cached. Targets are not achieved claims. |
 | 4 Backfill and baselines | Not implemented | Resumable processing from 2024-W01, catch-up, late scenes, seasonal baselines and warm-up. Acceptance: 52+ weeks per pilot site plus data-gap report. Planning is not processing. |
 | 5 Scoring events images review | Not implemented | Explainable levels/direction/confidence/drivers, merging, image pairs and durable local review decisions. Acceptance: event images <=40 KB and decisions survive restart. |
@@ -91,6 +98,11 @@ Phase 1 access acceptance passes; code review is the remaining phase gate.
 | 8 Another country | Deferred beyond Russian pilot | Add a country/climate through sourced catalogue/config records. Acceptance: no country-specific algorithm code changes and global edge-case tests pass. |
 | 9 Validation and tuning | Not implemented | Sourced event backtests, threshold tuning and methods. Acceptance: documented confirmation rates, false events per site-year and no-data fractions; version and retain old results. |
 | 10 Machine learning | Optional, not implemented | Isolation Forest second opinion; supervised work only after sufficient reviewed labels and a validated rule-based pipeline. |
+
+Keep catalogue proposals/decisions and raw sources in the external workspace. Local
+workflow locking and recoverable acceptance are implemented; shared Colab/Drive
+checkpointing and locks remain Phase 7a work. Native osmium and live imports beyond
+OurAirports still need validation. The basic transliteration is not full BGN/PCGN.
 
 Phase 2 includes site/unit/equipment/source/taxonomy provenance, dated garrison
 and equipment links, reusable source classification and human-approved zones.
@@ -152,12 +164,12 @@ belong in logs, docs or commits.
 
 ## Development and verification
 
-Install the locked environment with uv sync --locked --extra access.
+Install the locked environment with uv sync --locked --extra access --extra ingestion --extra review.
 For implementation changes, run:
 
 ```sh
-uv run --extra access python scripts/check.py
-uv run --extra access pre-commit run --all-files
+uv run --extra access --extra ingestion --extra review python scripts/check.py
+uv run --extra access --extra ingestion --extra review pre-commit run --all-files
 ```
 
 The first command is the Windows equivalent of make check. Regenerate schemas

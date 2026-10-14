@@ -1,0 +1,14 @@
+source:
+  id: ourairports-132fc8c
+  title: OurAirports airports CSV pinned revision 132fc8c
+  url: https://ourairports.com/data/
+  archive_url: https://raw.githubusercontent.com/davidmegginson/ourairports-data/132fc8c3471c96cfffe3ece8a89f9f252f670243/airports.csv
+  publisher: OurAirports contributors
+  accessed: 2026-10-14
+  reuse_class: import
+  licence: Public domain
+  attribution: OurAirports contributors
+connector: ourairports
+country: RUS
+download_url: https://raw.githubusercontent.com/davidmegginson/ourairports-data/132fc8c3471c96cfffe3ece8a89f9f252f670243/airports.csv
+record_ids: [UUMU, RU-8602, RU-4464]

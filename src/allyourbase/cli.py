@@ -1,4 +1,4 @@
-"""The Phase 0 command surface; unimplemented actions fail without side effects."""
+"""Planning, provider access and sourced catalogue review commands."""
 
 import json
 from dataclasses import dataclass
@@ -14,15 +14,18 @@ from allyourbase.loading import InputError
 from allyourbase.project import Project
 from allyourbase.providers.commands import providers_app
 from allyourbase.schemas import generate_schemas, stale_schemas
+from allyourbase.sources.commands import launch_review, register_catalogue_commands, sources_app
 from allyourbase.weeks import ISOWeek, week_range
 
 app = typer.Typer(
     no_args_is_help=True,
     invoke_without_command=True,
     pretty_exceptions_show_locals=False,
-    help="AllYourBase · local Sentinel monitoring and provider access",
+    help="AllYourBase · Sentinel access and catalogue review",
 )
-catalogue_app = typer.Typer(no_args_is_help=True, help="Check human-curated catalogue records.")
+catalogue_app = typer.Typer(
+    no_args_is_help=True, help="Check and review human-curated catalogue records."
+)
 config_app = typer.Typer(
     no_args_is_help=True, help="Validate settings without accessing providers."
 )
@@ -31,6 +34,8 @@ app.add_typer(catalogue_app, name="catalogue")
 app.add_typer(config_app, name="config")
 app.add_typer(schemas_app, name="schemas")
 app.add_typer(providers_app, name="providers")
+app.add_typer(sources_app, name="sources")
+register_catalogue_commands(catalogue_app)
 
 
 @dataclass(frozen=True)
@@ -70,7 +75,17 @@ def _project(ctx: typer.Context) -> Project:
         raise typer.Exit(1) from exc
 
 
+def _catalogue_ready(project: Project) -> None:
+    if (project.workspace / "review/pending-acceptance.json").exists():
+        typer.echo(
+            "Catalogue write is incomplete; run catalogue recover before checking or planning.",
+            err=True,
+        )
+        raise typer.Exit(1)
+
+
 def _catalogue(project: Project) -> Catalogue:
+    _catalogue_ready(project)
     report = check_catalogue(project.root / "catalogue", project.settings)
     if not report.ok or report.catalogue is None:
         for error in report.errors:
@@ -92,6 +107,7 @@ def catalogue_check(
     json_output: Annotated[bool, typer.Option("--json", help="Machine-readable report.")] = False,
 ) -> None:
     project = _project(ctx)
+    _catalogue_ready(project)
     report = check_catalogue(project.root / "catalogue", project.settings)
     summary = report.summary()
     if json_output:
@@ -210,9 +226,11 @@ def backfill(
 
 
 @app.command()
-def review() -> None:
-    """Local review UI (reserved for Phases 2 and 5; no server launched)."""
-    _unimplemented("Local review app", "Phases 2 and 5")
+def review(
+    ctx: typer.Context, port: Annotated[int, typer.Option(min=1024, max=65535)] = 8765
+) -> None:
+    """Review the Phase 2 catalogue queue on the local loopback interface."""
+    launch_review(_project(ctx), port)
 
 
 @app.command()
@@ -224,5 +242,7 @@ def publish() -> None:
 @app.command()
 def status() -> None:
     """Show implementation status; no configuration or credentials are read."""
-    typer.echo("Phase 0 foundation and Phase 1 provider diagnostics/access spike.")
-    typer.echo("Weekly analysis, scoring, review, website and publishing are not implemented.")
+    typer.echo("Phases 0–1 foundation/access and Phase 2 source ingestion/catalogue review.")
+    typer.echo(
+        "Weekly analysis, scoring, event review, website and publishing are not implemented."
+    )
