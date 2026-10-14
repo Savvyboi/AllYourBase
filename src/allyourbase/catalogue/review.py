@@ -16,6 +16,7 @@ from allyourbase.loading import InputError, load_data
 from allyourbase.models.catalogue import Equipment, SiteFeature, Source, TaxonomyTerm, Unit
 from allyourbase.models.common import Contract
 from allyourbase.project import Project
+from allyourbase.sources.contracts import Digest, Snapshot
 from allyourbase.sources.snapshots import canonical, verify_snapshot
 from allyourbase.sources.store import Store, workflow_lock
 
@@ -25,6 +26,7 @@ class ReviewBundle(Contract):
     units: list[Unit] = Field(default_factory=list)
     equipment: list[Equipment] = Field(default_factory=list)
     terms: dict[str, list[TaxonomyTerm]] = Field(default_factory=dict)
+    evidence_proposals: list[Digest] = Field(default_factory=list, max_length=100)
 
 
 def _merge(
@@ -64,6 +66,16 @@ def prepare(
         raise InputError("an active pending proposal and reviewer are required")
     if not (bundle.sites or bundle.units or bundle.equipment):
         raise InputError("acceptance requires at least one structured catalogue record")
+    identifiers = [identifier, *bundle.evidence_proposals]
+    if len(identifiers) != len(set(identifiers)):
+        raise InputError("evidence proposal IDs must be distinct, excluding the primary proposal")
+    evidence = list(proposal["evidence"])
+    for related_id in bundle.evidence_proposals:
+        related = store.proposal(related_id)
+        if not related["active"] or related["state"] not in {"pending", "accepted"}:
+            raise InputError("supporting evidence must be active and pending or accepted")
+        evidence.extend(related["evidence"])
+    evidence = list({canonical(entry): entry for entry in evidence}.values())
     current = check_catalogue(project.root / "catalogue", project.settings)
     if not current.ok or current.catalogue is None:
         raise InputError("repair the existing catalogue before accepting proposals")
@@ -73,16 +85,14 @@ def prepare(
         entry["id"]: Source.model_validate(entry).model_dump(mode="json")
         for entry in source_data["sources"]
     }
-    for evidence in proposal["evidence"]:
-        manifest = evidence["manifest"]
-        verify_snapshot(
-            project.workspace
-            / "sources"
-            / manifest["spec"]["source"]["id"]
-            / manifest["id"]
-            / "manifest.json"
+    for entry in evidence:
+        pinned = Snapshot.model_validate(entry["manifest"])
+        retained, _ = verify_snapshot(
+            project.workspace / "sources" / pinned.spec.source.id / pinned.id / "manifest.json"
         )
-        source = evidence["manifest"]["spec"]["source"]
+        if retained != pinned:
+            raise InputError("retained source manifest differs from staged evidence")
+        source = retained.spec.source.model_dump(mode="json")
         if source["id"] in sources and sources[source["id"]] != source:
             raise InputError(
                 "source ID already exists with different metadata; use a versioned source ID"
@@ -130,12 +140,12 @@ def prepare(
     report = check_catalogue(directory, project.settings)
     if not report.ok:
         raise InputError("bundle rejected: " + "; ".join(report.errors))
-    evidence = proposal["evidence"]
     if not evidence:
         raise InputError("proposal has no immutable source evidence")
     provenance = {
         "schema_version": 1,
         "proposal_id": identifier,
+        "evidence_proposals": bundle.evidence_proposals,
         "reviewer": reviewer,
         "note": note,
         "bundle": bundle.model_dump(mode="json", by_alias=True),

@@ -61,6 +61,8 @@ Git metadata and the virtual environment are omitted from the source archive.
   stages candidate facts and retains rejected proposals across repeat imports.
 - `catalogue review` opens the loopback review app; `queue/show/accept/reject/recover`
   provide CLI review with validated bundles and provenance-preserving writes.
+  Supporting source proposals can be attached to one bundle; `catalogue readiness`
+  checks milestone evidence separately from structural catalogue validity.
 - `providers validate-optical` verifies existing optical band files and provenance
   without making network requests.
 
@@ -74,6 +76,7 @@ and are labelled fictional. Add reviewed, cited records under
 uv run allyourbase config check
 uv run allyourbase catalogue check
 uv run allyourbase catalogue check --json
+uv run --extra ingestion allyourbase catalogue readiness --country RUS --require-type airbase --require-type naval_base --require-type garrison
 uv run allyourbase schemas check
 uv run allyourbase schemas generate
 uv run allyourbase run --site xxx-example-site --week 2026-W41 --plan

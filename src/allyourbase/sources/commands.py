@@ -70,7 +70,7 @@ def fetch_command(
 ) -> None:
     """Download import-class data only, with a byte limit; no redirects or credentials."""
     project = project_from_context(ctx)
-    query = query_file.read_text(encoding="utf-8") if query_file else None
+    query = query_file.read_text(encoding="utf-8-sig") if query_file else None
     echo(
         {
             "manifest": fetch_snapshot(
@@ -104,6 +104,22 @@ def match_command(ctx: typer.Context) -> None:
 
 
 def register_catalogue_commands(app: typer.Typer) -> None:
+    @app.command("readiness")
+    @guarded
+    def readiness_command(
+        ctx: typer.Context,
+        country: Annotated[str, typer.Option(help="Country ISO3 code.")],
+        minimum_sites: Annotated[int, typer.Option(min=1)] = 10,
+        require_type: Annotated[list[str] | None, typer.Option()] = None,
+    ) -> None:
+        """Report reviewed geometry/link evidence and candidate gaps without accepting anything."""
+        from allyourbase.catalogue.readiness import readiness
+
+        report = readiness(project_from_context(ctx), country, minimum_sites, require_type or [])
+        echo(report)
+        if not report["ready"]:
+            raise typer.Exit(1)
+
     @app.command("queue")
     @guarded
     def queue(ctx: typer.Context, state: str = "pending") -> None:

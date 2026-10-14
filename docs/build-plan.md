@@ -23,8 +23,8 @@ current implementation status and the next work. The repository
 | Approved test scope | Chkalovskiy, Engels and Olenya; 4 km windows derived from pinned OurAirports records. Owner approved the locations and live checks on 2026-10-14, replacing the original three-country spike. |
 | Live evidence | 2026-W34 through W41; 96 site/provider/week rows across four catalogues contain acquisitions. Earth Search and CDSE optical each produced 21 verified band TIFFs; CDSE radar produced three validated four-band 10 m TIFFs. The Colab fallback also produced 24 successful site/week rows. |
 | Measured radar usage | Each successful 401 by 401 radar Process call reported 3.067035675 PU. Three successful chips used 9.201107025 PU plus 0.06 catalogue PU. The entire debug/test session used 21.469249725 Process PU plus 0.18 catalogue PU. |
-| Verification | 174 pytest/Hypothesis tests, Ruff, formatting, strict mypy, settings/catalogue/schema checks and all five pre-commit hooks pass. Generated radar JavaScript was executed against representative samples and metadata. |
-| Phase 2 workflow | Immutable snapshots, source-reuse enforcement, DuckDB staging, matching/geocoding proposals, permitted PDF page/rule extraction and a local catalogue review UI/CLI are implemented. Three live OurAirports proposals; unchanged import produces zero new proposals. Production catalogue remains empty. |
+| Verification | 192 pytest/Hypothesis tests, Ruff, formatting, strict mypy, settings/catalogue/schema checks and all five pre-commit hooks pass. Generated radar JavaScript was executed against representative samples and metadata. |
+| Phase 2 workflow | Immutable snapshots, source-reuse enforcement, DuckDB staging, matching/geocoding proposals, permitted PDF page/rule extraction and a local catalogue review UI/CLI are implemented. 31 live OurAirports/Wikidata site records; unchanged snapshots produce zero new proposals. Multi-source review and separate evidence-readiness checks pass. Production catalogue remains empty. |
 | Phase 3 prototypes | Radar request grids and antimeridian discovery splitting exist and have synthetic coverage. Shared preprocessing, persistent chip cache, masks, alignment and indicators are not implemented. |
 
 Detailed evidence: [implementation verification](phase-1-validation.md),
@@ -41,8 +41,8 @@ boundaries or a production monitoring catalogue.
 1. Phase 1 is merged. Preserve the existing access evidence.
 2. Continue [Phase 2 production review](phase-2.md). Gather permitted geometry and
    dated unit/equipment sources; review at least ten Russian sites across the
-   required site types. The workflow is implemented, but three source points do
-   not establish production sites, zones or military unit/equipment claims.
+   required site types. The workflow and a 31-record discovery packet are implemented;
+   source points/hints do not establish production sites, zones or military unit/equipment claims.
 3. Continue processing through Colab as selected by the owner. Its Phase 1 access
    notebook is exercised; full processing still needs a resumable results store,
    VM-local working DB, checkpoint sync and a shared one-writer lock.
@@ -97,9 +97,9 @@ live testing with this Russian pilot; synthetic global-geometry checks remain.
 - [ ] At least 10 reviewed Russian production sites across airbases, naval bases
   and garrisons, with sourced unit/equipment links and reviewed zones.
 
-Workflow checks pass; native osmium and live sources beyond OurAirports remain
-unverified. Basic Cyrillic matching keys are implemented; full contextual BGN/PCGN
-transliteration is deferred. See [Phase 2 evidence and limitations](phase-2.md).
+Workflow checks and live OurAirports/Wikidata imports pass; native osmium,
+GeoNames and Geofabrik remain unverified. Basic Cyrillic matching keys are
+implemented; full contextual BGN/PCGN transliteration is deferred. See [Phase 2 evidence and limitations](phase-2.md).
 
 Acceptance: `catalogue check` passes; every fact traces to a snapshot or cited
 page; unchanged ingestion creates no new proposals; a preview map displays zones

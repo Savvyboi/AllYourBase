@@ -40,7 +40,23 @@ checkpoint synchronization or the cross-runtime lock planned for Phase 7a.
 
 ## Acceptance
 
-Offline workflow tests and one bounded live OurAirports import pass. Phase 2 is
+Offline workflow tests and bounded live OurAirports/Wikidata imports pass. Phase 2 is
 not complete until ten or more real Russian sites, zones and sourced dated unit/
 equipment links have been reviewed and every fact traces to its source. The
 three Phase 1 access windows remain separate from the production catalogue.
+
+## Multi-source acceptance and milestone evidence
+
+Allow a review bundle to attach active pending/accepted supporting proposals.
+Preserve every attached manifest and locator in the primary acceptance record;
+leave supporting decisions unchanged. Verify snapshots and reject duplicate,
+rejected or superseded attachments before any catalogue write. This lets source
+identity, geometry and dated claims come from separate permitted sources.
+
+Keep structural catalogue validity separate from milestone readiness. The
+readiness command checks exact reviewed records, retained snapshot evidence,
+minimum site/type coverage and overlapping dated garrison/equipment links. It
+never promotes discovery records or fills in dates/status/geometry. Discovery
+country associations, generic site hints and multiple entities for one location
+still require human interpretation. Readiness is evidence completeness, not a
+claim that source assertions are true or deployments are current.
