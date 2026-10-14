@@ -1,11 +1,13 @@
 # Phase 2 mixed Russian pilot source geometry
 
-Updated 2026-10-14 (Europe/Helsinki).
+Updated 2026-10-15 (Europe/Helsinki).
 
 The owner selected the mix of all military base types across Russia. This
 continuation prepares a first review batch of ten sites: four airbases, three
 naval facilities and three proposed ground garrisons. It is not an exhaustive
 inventory, an approved production catalogue or a claim about current deployments.
+The owner approved the displayed candidate identities/classifications and source
+geometry on 2026-10-15; independent evidence and geometry validation remain open.
 
 The [selection file](proposals/rus-mixed-pilot.yaml) contains source object IDs,
 identity alternatives and review notes. Coordinates and source polygons remain
@@ -156,3 +158,22 @@ all ten candidates, all 77 zone links, identity links, JSON download, search and
 zone deep link, with no JavaScript errors or 375 px overflow. Desktop/mobile
 screenshots were visually inspected. Full QA and generated files remain outside
 Git. Production catalogue and decisions are unchanged; Phase 2 remains open.
+
+
+## Owner decision recorded (2026-10-15)
+
+The owner explicitly stated "all approved, continue" for the displayed packet.
+The immutable approval archive is keyed by review ID
+`151d4e72412905a9b3d6168f91695f7194068d3b667063f83a5ca9d83c8660dd`.
+It retains the original packet bytes with SHA-256
+`a1c8e5c7cf131c1d83a6e0afa49408567d18ec59992a7162b63625578e712f5f`.
+The current preview and gap report carry this approval and no longer list the
+owner identity/geometry review steps as missing. The exact displayed geometry
+and source associations were preserved. Existing proposal decisions and the
+production catalogue are unchanged.
+
+Owner approval is complete for these displayed proposals. Remaining work is
+validating the five crossing polygons, supplying supported roles/geometry for
+four candidates, and retaining source-dated status and historical evidence.
+Approval dates do not populate factual claim dates. Keep the recorded decision
+for unchanged content; changed source content uses a different review ID.

@@ -1,11 +1,11 @@
 # Phase 2 catalogue ingestion and review
 
-Updated 2026-10-14 (Europe/Helsinki).
+Updated 2026-10-15 (Europe/Helsinki).
 
 The source-to-review workflow is implemented. Phase 2 acceptance remains open:
-the production catalogue is empty, and at least ten Russian sites spanning
-airbases, naval bases and garrisons still need human-reviewed geometry and sourced,
-dated unit/equipment links. The three existing access windows are not production
+the production catalogue is empty. The owner approved the displayed ten-candidate
+mixed packet on 2026-10-15; valid structured records and sourced dates/historical
+evidence remain to be completed. The three existing access windows are not production
 boundaries. Phase 1 was merged in PR #2 at f700c1a.
 
 ## Run the workflow
@@ -233,3 +233,55 @@ superseded or unrelated versions cannot supply attachment links. See the
 [mixed-pilot continuation](phase-2-mixed-pilot.md#evidence-link-and-review-gap-continuation-2026-10-15)
 for the retained input checks, refreshed local preview and remaining gaps.
 All 219 tests and required checks pass. Production acceptance remains open.
+
+
+## Owner approval and populated-place validation (2026-10-15)
+
+The owner explicitly approved all displayed proposals after PR #6 was merged.
+`catalogue approve-packet` now preserves that decision alongside the exact packet
+bytes, packet hash, reviewer, statement, timestamp and reviewed candidate IDs:
+
+```sh
+uv run --extra ingestion allyourbase catalogue approve-packet EXTERNAL_PACKET/packet.json --reviewer owner --note "Explicit approval statement"
+```
+
+The command is idempotent and writes an atomic archive outside Git under
+`review/packet-approvals/`. It does not accept source proposals or write production
+catalogue facts. Matching regenerated packets show the approval and clear owner
+identity/geometry review tasks. Their remaining evidence and containment gaps
+stay visible. Changes to displayed identities, source geometry, zone roles or
+source versions require a new approval record; loopback URL or gap-display
+changes do not invalidate the existing decision. Corrupt archives or changed
+retained payloads are refused. The recorded owner approval date is a decision
+date, never a source claim date or an assertion about current deployments.
+
+The current preview at http://127.0.0.1:8769/preview.html shows the approval for
+all ten candidates. Its geometry is unchanged. Five crossing polygons, four
+compatible-zone gaps and missing dated status/historical evidence remain. The
+production catalogue stays empty and milestone readiness remains false.
+
+The bounded [GeoNames source spec](../config/sources/geonames-rus-cities5000.yaml)
+has been exercised against the official cities5000 ZIP. The adapter retains only
+populated-place rows with the Russian country code: 2,759 place-name records,
+zero site/unit/equipment proposals, and zero new proposals on repeat. The source
+is licensed under CC BY 4.0; format and subset scope are documented in the
+[official readme](https://download.geonames.org/export/dump/readme.txt).
+This subset omits smaller settlements and is not a full country gazetteer.
+
+Retained snapshot ID:
+`3e277715b553a4ee8133968dba17ed4d4cf54d0633497376cc1eb43775c56559`.
+Payload SHA-256:
+`30a688c43ae6f9eae747e905d7066cf9857805e0b94575770803cdc3f8ab274b`.
+The ZIP contains 5,712,430 bytes. Import evidence remains outside Git under
+`review/geonames-cities5000-20261015/`.
+
+Repeated staging of an already verified current snapshot now returns its retained
+parsed-row count without reparsing or row writes. Source hashes are checked on
+every call. Counts are committed with staging; existing databases add the counts
+on the next ordinary stage. Re-staging an older snapshot still updates its source
+head, and rejection/acceptance decisions remain intact.
+
+All 233 tests and required checks pass, including approval persistence,
+idempotence, changed content, archive/source tampering, CLI recording, repeat
+import integrity, older-head restoration and existing-database migration.
+Native osmium and live Geofabrik/full-country gazetteer imports remain unverified.

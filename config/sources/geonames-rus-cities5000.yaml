@@ -1,0 +1,12 @@
+source:
+  id: geonames-rus-cities5000-20261015
+  title: GeoNames cities5000 populated-place gazetteer, Russian country filter
+  url: https://download.geonames.org/export/dump/readme.txt
+  publisher: GeoNames contributors
+  accessed: 2026-10-15
+  reuse_class: import
+  licence: Creative Commons Attribution 4.0
+  attribution: GeoNames contributors, CC BY 4.0
+connector: geonames
+country: RUS
+download_url: https://download.geonames.org/export/dump/cities5000.zip

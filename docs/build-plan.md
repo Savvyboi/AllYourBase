@@ -1,6 +1,6 @@
 # AllYourBase build plan
 
-Updated 2026-10-14 (Europe/Helsinki).
+Updated 2026-10-15 (Europe/Helsinki).
 
 AllYourBase will run Sentinel processing in Google Colab and publish reviewed results to
 a separate static GitHub Pages repository. Phase 0 is merged. Phase 1 has verified
@@ -208,3 +208,21 @@ Git. Published outputs later need review, attribution and size/schema/link check
 Current publication policy defaults to reviewed_only; delay_days 0 is provisional,
 not an instruction to publish. New user instructions override historical scope
 and should be reflected in this plan, AGENTS.md and the relevant ADR.
+
+
+## Phase 2 owner approval continuation (2026-10-15)
+
+PR #6 is merged at 130c81a. The owner approved the displayed ten-candidate mixed
+packet; its exact content/hash and explicit decision are now retained through
+`catalogue approve-packet`. Regeneration carries approval for matching content
+and keeps missing source evidence and invalid containment visible. Do not repeat
+the same owner-review request. Production acceptance still requires valid
+structured records, supported zone roles and source-dated historical evidence.
+
+The bounded GeoNames cities5000 import is now validated with 2,759 populated
+places and no new catalogue proposals on first/repeat staging. Repeating a
+verified current snapshot skips parsing and row writes while retaining hash
+checks. Full country and Geofabrik/osmium imports remain unverified. The
+[Phase 2 record](phase-2.md#owner-approval-and-populated-place-validation-2026-10-15)
+contains the scope, immutable source hashes and validation results. Phase 3
+remains gated on actual Phase 2 production acceptance.
