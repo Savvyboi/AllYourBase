@@ -106,18 +106,34 @@ def fetch_snapshot(
     workspace.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=workspace) as temporary:
         name = Path(parts.path).name or "query.json"
-        if spec.connector == "wikidata":
+        if spec.connector == "wikidata" or (spec.connector == "osm" and query):
             if not query:
                 raise InputError("Wikidata fetch requires an explicit bounded SPARQL query")
             name = "query.json"
         path = Path(temporary) / name
         headers = {
             "User-Agent": f"AllYourBase/{__version__} source-ingestion (https://github.com/Savvyboi/AllYourBase)",
-            "Accept": "application/sparql-results+json" if query else "*/*",
+            "Accept": (
+                "application/sparql-results+json"
+                if spec.connector == "wikidata"
+                else "application/json"
+                if query
+                else "*/*"
+            ),
         }
         try:
             with httpx.Client(timeout=60, follow_redirects=False) as client:
-                params = {"query": query, "format": "json"} if query else None
+                if query and spec.connector not in {"wikidata", "osm"}:
+                    raise InputError("query files are supported only for Wikidata and OSM")
+                params = (
+                    (
+                        {"data": query}
+                        if spec.connector == "osm"
+                        else {"query": query, "format": "json"}
+                    )
+                    if query
+                    else None
+                )
                 with client.stream("GET", url, headers=headers, params=params) as response:
                     response.raise_for_status()
                     size = 0

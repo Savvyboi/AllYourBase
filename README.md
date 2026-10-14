@@ -4,7 +4,8 @@ AllYourBase is a review-first Sentinel-1/Sentinel-2 tool with Google Colab
 processing and a human-curated catalogue. Phases 0 and 1 are merged. Version 0.3
 adds **Phase 2 source ingestion and catalogue review**: immutable snapshots,
 DuckDB staging, candidate matching and a local review queue with source citations
-and zone previews. See [the Phase 2 workflow](docs/phase-2.md).
+and zone previews. See [the Phase 2 workflow](docs/phase-2.md) and the
+[first mixed-pilot geometry packet](docs/phase-2-mixed-pilot.md).
 
 Primary optical, CDSE optical fallback and radar access pass for three approved
 Russian access-test areas; see the [validated Colab notebook](notebooks/README.md).

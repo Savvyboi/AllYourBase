@@ -1,0 +1,66 @@
+schema_version: 1
+country: RUS
+status: proposed
+scope: All military base types across Russia; a mixed first review batch, not an exhaustive inventory.
+requested_on: 2026-10-14
+sites:
+  - id: rus-chkalovsky
+    name: Chkalovsky Air Base
+    site_type: airbase
+    source_record: relation/3300255
+    identity_records: [UUMU]
+    notes: [ICAO UUMU links this footprint to the existing OurAirports pilot point.]
+  - id: rus-engels
+    name: Engels-2 Air Base
+    site_type: airbase
+    source_record: way/240082750
+    identity_records: [RU-8602, Q689065]
+    notes: [The mapped military parcel replaces the access-test square only after geometry review.]
+  - id: rus-olenya
+    name: Olenya air base
+    site_type: airbase
+    source_record: way/1058596337
+    identity_records: [RU-4464, Q1984972]
+    notes: [OSM operator tags are not evidence of a current unit deployment.]
+  - id: rus-gromovo
+    name: Gromovo Air Base
+    site_type: airbase
+    source_record: relation/10887616
+    identity_records: [Q111711167, Q115803598]
+    notes: [Unnamed OSM military parcel near the two Gromovo Wikidata records; identity and duplicate resolution need review.]
+  - id: rus-novorossiysk
+    name: Novorossiysk naval base
+    site_type: naval_base
+    source_record: way/233225970
+    identity_records: [Q4325146]
+    notes: [The source parcel may cover only part of the wider naval facility.]
+  - id: rus-zapadnaya-litsa
+    name: Zapadnaya Litsa Submarine Base
+    site_type: naval_base
+    source_record: way/1533936043
+    identity_records: [Q2988385]
+    notes: [Nearby Nerpichya Bay is mapped separately; do not count it as another independent base without review.]
+  - id: rus-gadzhiyevo
+    name: Gadzhiyevo Naval Base
+    site_type: naval_base
+    source_record: way/1534042409
+    identity_records: [Q1169151]
+    notes: [OSM explicitly calls this an estimated outline; review all boundaries and water/shore coverage.]
+  - id: rus-ground-60208009
+    name: 7th Separate Guards Motor Rifle Regiment source parcel
+    site_type: garrison
+    source_record: way/60208009
+    identity_records: []
+    notes: [OSM military-base name is a candidate historical/home-base association; no current unit claim or claim date is established.]
+  - id: rus-ground-1317407504
+    name: 29th Separate Railway Brigade source parcel
+    site_type: garrison
+    source_record: way/1317407504
+    identity_records: []
+    notes: [Garrison classification and unit association need independent dated evidence.]
+  - id: rus-ground-1334980464
+    name: 10th Separate Repair and Evacuation Regiment source parcel
+    site_type: garrison
+    source_record: way/1334980464
+    identity_records: []
+    notes: [Garrison classification and unit association need independent dated evidence.]

@@ -207,3 +207,18 @@ checks. Browser QA exercised evidence attachment, citation display and synthetic
 zone previews at 1280 px and 375 px with no JavaScript errors or horizontal
 overflow. Production acceptance still needs permitted boundary/zone sources,
 dated unit/equipment sources and owner decisions on at least ten real sites.
+
+
+## Mixed scope and source geometry continuation
+
+The owner confirmed all Russian military base types on 2026-10-14. The first
+[mixed pilot packet](phase-2-mixed-pilot.md) now contains ten mapped footprint
+candidates and 77 zone/mask associations. The broader OSM discovery inventory
+contains 18,568 tagged features, including structures that are not bases.
+
+Native Overpass JSON/query fetching is exercised. `catalogue packet` prepares a
+read-only geometry/citation packet outside Git, flags containment and compatible
+zone-role gaps and links to staged proposals. Zones and water masks have separate
+staging kinds. All 209 tests and required checks pass. Production approval,
+status/claim dates and dated unit/equipment links remain open. None of the ten
+polygons was accepted, and no new Sentinel imagery was requested.
