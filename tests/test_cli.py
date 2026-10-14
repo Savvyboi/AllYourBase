@@ -22,7 +22,7 @@ def test_catalogue_json(root: Path) -> None:
     assert json.loads(result.stdout)["counts"]["sites"] == 0
 
 
-@pytest.mark.parametrize("command", ["run", "backfill", "review", "publish"])
+@pytest.mark.parametrize("command", ["run", "backfill", "publish"])
 def test_reserved_commands_fail_honestly(command: str, tmp_path: Path) -> None:
     before = list(tmp_path.iterdir())
     result = runner.invoke(app, ["--root", str(tmp_path), command])
@@ -84,4 +84,4 @@ def test_cli_configuration_error_redacts_inputs(root: Path, tmp_path: Path) -> N
 def test_version() -> None:
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0, result.output
-    assert "0.2.0" in result.stdout
+    assert "0.3.0" in result.stdout

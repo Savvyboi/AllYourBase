@@ -1,14 +1,16 @@
 # AllYourBase
 
-AllYourBase is a local, review-first GEOINT tool for weekly aggregate change
-monitoring with Sentinel-1 and Sentinel-2. Phase 0 is complete. This version adds
-the **Phase 1 provider-access spike**: discovery, optical window reads, radar
-requests and local usage reports. Eight-week discovery, optical/radar reads and
-measured radar costs now pass for three owner-approved Russian airbase test areas.
-CDSE optical fallback now passes in Google Colab: all 21 band files were
-independently revalidated. Colab is the selected processing runtime; see the
-[validated access notebook](notebooks/README.md). Indicators,
-scoring, review UI and the Hugo website remain future milestones.
+AllYourBase is a review-first Sentinel-1/Sentinel-2 tool with Google Colab
+processing and a human-curated catalogue. Phases 0 and 1 are merged. Version 0.3
+adds **Phase 2 source ingestion and catalogue review**: immutable snapshots,
+DuckDB staging, candidate matching and a local review queue with source citations
+and zone previews. See [the Phase 2 workflow](docs/phase-2.md).
+
+Primary optical, CDSE optical fallback and radar access pass for three approved
+Russian access-test areas; see the [validated Colab notebook](notebooks/README.md).
+The production catalogue still needs reviewed sites, geometry and sourced dated
+unit/equipment claims. Indicators, scoring, event review and the Hugo website
+remain future milestones.
 
 Code repository: [Savvyboi/AllYourBase](https://github.com/Savvyboi/AllYourBase).
 Each build-plan phase is proposed through a separate pull request.
@@ -55,6 +57,10 @@ Git metadata and the virtual environment are omitted from the source archive.
   `--online` checks collection access.
 - `providers spike` writes acquisition, window-read, failure and usage reports
   to the external local workspace. Pixel reads are explicit options.
+- `sources snapshot/fetch/stage/match` preserves source permissions and exact evidence,
+  stages candidate facts and retains rejected proposals across repeat imports.
+- `catalogue review` opens the loopback review app; `queue/show/accept/reject/recover`
+  provide CLI review with validated bundles and provenance-preserving writes.
 - `providers validate-optical` verifies existing optical band files and provenance
   without making network requests.
 
@@ -79,7 +85,7 @@ uv run allyourbase providers spike --aoi-file docs/proposals/phase-1-aois.geojso
 
 Global `--root PATH` selects another project directory. A settings path can be
 selected with `--settings PATH` (relative to that root or absolute).
-`run`, `backfill`, `review` and `publish` refuse actual execution until their
+`run`, `backfill` and `publish` refuse actual execution until their
 implementation milestones. Their help screens describe that limitation.
 
 ## Configuration and workspace
@@ -110,7 +116,7 @@ decisions before Phase 7.
 
 ## Structure and next steps
 
-See the [active build plan](docs/build-plan.md), [updated Word plan](docs/build-plan.docx)
+See the [active build plan](docs/build-plan.md), [Word plan snapshot](docs/build-plan.docx)
 and [AGENTS.md](AGENTS.md) for completed work, remaining acceptance checks and the
 phase-by-phase roadmap. [Phase 0](docs/phase-0.md), [Phase 1](docs/phase-1.md) and
 [ADRs](docs/adr/) contain the milestone evidence and design decisions.

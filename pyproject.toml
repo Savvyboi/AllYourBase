@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "allyourbase"
-version = "0.2.0"
+version = "0.3.0"
 description = "Local, review-first Sentinel monitoring with a sourced geospatial catalogue"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -29,7 +29,10 @@ imagery = [
   "Pillow>=11,<13", "duckdb>=1.1,<2", "keyring>=25,<27",
 ]
 review = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1"]
-ingestion = ["SPARQLWrapper>=2,<3", "pdfplumber>=0.11,<1", "rapidfuzz>=3,<4"]
+ingestion = [
+  "duckdb>=1.1,<2", "pdfplumber>=0.11,<1", "rapidfuzz>=3,<4",
+  "pycountry>=24,<27", "filelock>=3,<4",
+]
 
 [dependency-groups]
 dev = [
@@ -58,7 +61,7 @@ module = ["shapely", "shapely.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["rasterio", "rasterio.*", "pyproj", "pyproj.*", "keyring", "keyring.*", "boto3", "boto3.*"]
+module = ["rasterio", "rasterio.*", "pyproj", "pyproj.*", "keyring", "keyring.*", "boto3", "boto3.*", "pdfplumber", "pdfplumber.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

@@ -2,14 +2,15 @@
 
 import subprocess
 
+PREFIX = ["uv", "run", "--extra", "access", "--extra", "ingestion", "--extra", "review"]
 COMMANDS = [
-    ["uv", "run", "ruff", "check", "."],
-    ["uv", "run", "ruff", "format", "--check", "."],
-    ["uv", "run", "mypy", "src", "tests"],
-    ["uv", "run", "--extra", "access", "pytest"],
-    ["uv", "run", "allyourbase", "config", "check"],
-    ["uv", "run", "allyourbase", "catalogue", "check"],
-    ["uv", "run", "allyourbase", "schemas", "check"],
+    [*PREFIX, "ruff", "check", "."],
+    [*PREFIX, "ruff", "format", "--check", "."],
+    [*PREFIX, "mypy", "src", "tests"],
+    [*PREFIX, "pytest"],
+    [*PREFIX, "allyourbase", "config", "check"],
+    [*PREFIX, "allyourbase", "catalogue", "check"],
+    [*PREFIX, "allyourbase", "schemas", "check"],
 ]
 
 

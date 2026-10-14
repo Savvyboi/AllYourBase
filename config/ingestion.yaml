@@ -1,0 +1,21 @@
+site_distance_km: 3
+site_similarity: 0.85
+link_distance_km: 30
+honorifics: [Guards, Red Banner, гвардейский, гвардейская, краснознаменный, краснознамённая]
+designation_types:
+  brigade: brigade
+  бригада: brigade
+  regiment: regiment
+  полк: regiment
+  division: division
+  дивизия: division
+branch_site_types:
+  air_force: [airbase]
+  navy: [naval_base, port]
+  army: [garrison, training_area]
+  marines: [naval_base, garrison, training_area]
+osm_site_type_hints:
+  airfield: airbase
+  naval_base: naval_base
+  barracks: garrison
+  training_area: training_area
