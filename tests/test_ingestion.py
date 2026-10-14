@@ -308,3 +308,54 @@ def test_recovery_preserves_intervening_edits(
         recover(configured)
     assert target.read_text() == "unrelated external edit"
     assert Store(configured.workspace).proposal(identifier)["state"] == "pending"
+
+
+def test_repeated_current_snapshot_skips_parsing_after_hash_check(
+    tmp_path: Path, spec: SourceSpec, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace = tmp_path / "data"
+    manifest = save_snapshot(workspace, spec, csv_file(tmp_path))
+    store = Store(workspace)
+    store.stage(manifest, MatchSettings())
+    proposal = store.proposals()[0]
+    store.decide(proposal["id"], "rejected", "fixture-reviewer", "Retain decision")
+
+    def unexpected_parse(*args: Any, **kwargs: Any) -> None:
+        raise AssertionError("unchanged current snapshot was parsed again")
+
+    monkeypatch.setattr("allyourbase.sources.store.parse_records", unexpected_parse)
+    assert store.stage(manifest, MatchSettings()) == {"parsed_records": 1, "new_proposals": 0}
+    assert store.proposal(proposal["id"])["state"] == "rejected"
+    (manifest.parent / "payload").write_text("changed bytes")
+    with pytest.raises(InputError, match="hash or size"):
+        store.stage(manifest, MatchSettings())
+
+
+def test_restaging_old_snapshot_restores_head_even_with_cached_count(
+    tmp_path: Path, spec: SourceSpec
+) -> None:
+    workspace = tmp_path / "data"
+    first = save_snapshot(workspace, spec, csv_file(tmp_path))
+    store = Store(workspace)
+    store.stage(first, MatchSettings())
+    original = store.proposals()[0]["id"]
+    second = save_snapshot(workspace, spec, csv_file(tmp_path, name="Changed fixture"))
+    store.stage(second, MatchSettings())
+    assert store.proposal(original)["active"] is False
+    assert store.stage(first, MatchSettings()) == {"parsed_records": 1, "new_proposals": 0}
+    assert store.proposal(original)["active"] is True
+    assert len(store.proposals("superseded")) == 1
+
+
+def test_existing_database_without_ingestion_stats_is_upgraded(
+    tmp_path: Path, spec: SourceSpec
+) -> None:
+    workspace = tmp_path / "data"
+    manifest = save_snapshot(workspace, spec, csv_file(tmp_path))
+    store = Store(workspace)
+    store.stage(manifest, MatchSettings())
+    with store.connect() as connection:
+        connection.execute("DROP TABLE ingestion_stats")
+    assert store.stage(manifest, MatchSettings()) == {"parsed_records": 1, "new_proposals": 0}
+    with store.connect() as connection:
+        assert connection.execute("SELECT parsed_records FROM ingestion_stats").fetchall() == [(1,)]

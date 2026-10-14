@@ -241,6 +241,18 @@ def build_packet(
         "notice": "Unapproved source geometry and tentative classifications. "
         "Mapped features are not a complete base inventory or proof of current deployments.",
     }
+    from allyourbase.catalogue.approvals import OWNER_REVIEW_GAPS, approval_for_packet, review_id
+
+    packet["review_id"] = review_id(packet)
+    packet["owner_approval"] = approval_for_packet(project, packet)
+    owner_approved = packet["owner_approval"] is not None
+    if owner_approved:
+        for item in candidates:
+            item["missing"] = [gap for gap in item["missing"] if gap not in OWNER_REVIEW_GAPS]
+        packet["notice"] = (
+            "Owner approval of the displayed proposals is recorded. "
+            "Catalogue acceptance still requires validated geometry and dated source evidence."
+        )
     gap_counts: dict[str, int] = {}
     gaps = []
     for item in candidates:
@@ -261,6 +273,7 @@ def build_packet(
         "schema_version": 1,
         "approved": False,
         "candidate_sites": len(candidates),
+        "owner_approval": packet["owner_approval"],
         "gap_counts": dict(sorted(gap_counts.items())),
         "candidates": gaps,
         "notice": "Review worklist only; this report makes no catalogue decisions.",
@@ -287,7 +300,10 @@ def build_packet(
         selection.scope,
         "",
         (
-            f"All {len(candidates)} candidates and their zones remain unapproved. "
+            f"Owner approval is recorded for all {len(candidates)} displayed proposals. "
+            "Production acceptance remains pending."
+            if owner_approved
+            else f"All {len(candidates)} candidates and their zones await owner approval. "
             "The production catalogue is unchanged."
         ),
         "",
@@ -343,6 +359,7 @@ def build_packet(
                     "candidate_id": item["id"],
                     "source_record": item["source_record"],
                     "role": "source_footprint",
+                    "owner_approved": owner_approved,
                     "approved": False,
                 },
             }
@@ -356,6 +373,7 @@ def build_packet(
                     "source_record": zone["source_record"],
                     "role": zone["hint"],
                     "contained": zone["contained"],
+                    "owner_approved": owner_approved,
                     "approved": False,
                 },
             }
@@ -372,6 +390,7 @@ def build_packet(
         "boundary_conflicts": sum(len(item["crossing_source_records"]) for item in candidates),
         "unstaged_associations": sum(len(item["unstaged_source_records"]) for item in candidates),
         "gap_counts": gap_report["gap_counts"],
+        "owner_approved": owner_approved,
         "approved": False,
         "output": str(output),
     }

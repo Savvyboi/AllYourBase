@@ -125,6 +125,19 @@ def register_catalogue_commands(app: typer.Typer) -> None:
             )
         )
 
+    @app.command("approve-packet")
+    @guarded
+    def approve_packet_command(
+        ctx: typer.Context,
+        packet: Path,
+        reviewer: Annotated[str, typer.Option(help="Person authorizing the displayed proposals.")],
+        note: Annotated[str, typer.Option(help="Explicit approval statement and context.")],
+    ) -> None:
+        """Record explicit owner approval of displayed proposals; no catalogue acceptance."""
+        from allyourbase.catalogue.approvals import record_packet_approval
+
+        echo(record_packet_approval(project_from_context(ctx), packet, reviewer, note))
+
     @app.command("readiness")
     @guarded
     def readiness_command(

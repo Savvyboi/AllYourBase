@@ -1,7 +1,7 @@
 # AllYourBase agent guide and build plan
 
-Updated 2026-10-15 (Europe/Helsinki), after the Phase 2 packet evidence continuation. This file applies to
-the whole repository.
+Updated 2026-10-15 (Europe/Helsinki), after owner approval of the displayed Phase 2 packet.
+This file applies to the whole repository.
 
 ## Purpose and authoritative records
 
@@ -64,11 +64,14 @@ Use [Phase 1 setup](docs/phase-1.md),
   See [mixed-pilot evidence](docs/phase-2-mixed-pilot.md) and the
   [selection](docs/proposals/rus-mixed-pilot.yaml). This is the first review batch;
   the broader scope is not an exhaustive completed inventory. All ten candidates
-  remain unapproved; status/claim dates, zone roles and dated unit/equipment links
-  are still open. The active queue has 185 record proposals: 41 site records,
+  have owner approval of the displayed proposals; status/claim dates, supported
+  zone roles and dated historical unit/equipment evidence are still open. The active
+  queue has 185 record proposals: 41 site records,
   80 zone candidates and 64 masks, with three superseded versions retained.
   Site records may duplicate physical facilities. Repeat finalized footprint and
-  zone imports produce zero new proposals.
+  zone imports produce zero new proposals. The owner approved all ten displayed
+  candidate identities/classifications and source geometry on 2026-10-15; the
+  dated source gaps and containment conflicts are separate validation work.
 - Phase 2 packet evidence continuation pins footprint and zone queue links to
   exact verified snapshots, retains active accepted supporting records and flags
   rejected/superseded/unlinked evidence. Packet format is now version 2, with a
@@ -77,7 +80,23 @@ Use [Phase 1 setup](docs/phase-1.md),
   all 77 associations have exact staged evidence. Five boundary conflicts across
   two candidates and four compatible-zone gaps remain. Production decisions and
   the original packet/snapshots are unchanged.
-- Last verified code checks: 219 pytest/Hypothesis tests, Ruff, format, strict
+- PR #6 is merged at 130c81a. The owner explicitly approved all displayed
+  proposals on 2026-10-15. The exact packet and its SHA-256 are archived under
+  `review/packet-approvals/151d4e72412905a9b3d6168f91695f7194068d3b667063f83a5ca9d83c8660dd/`.
+  `catalogue approve-packet` records this approval durably and idempotently;
+  regenerated matching packets clear owner-review tasks. Changed identities,
+  geometry, roles or source versions do not inherit the recorded approval.
+  Do not ask the owner to approve the unchanged displayed packet again.
+  Approval does not supply absent status/claim dates or historical evidence,
+  repair crossing polygons, or create production catalogue records.
+- A bounded live GeoNames cities5000 import retained 2,759 Russian populated
+  places, with zero new proposals on first/repeat staging. Its source spec is
+  `config/sources/geonames-rus-cities5000.yaml`; exact manifest/hash and validation
+  are outside Git under `review/geonames-cities5000-20261015/`. This is a partial
+  populated-place gazetteer, not an inventory of facilities or deployments.
+  Re-staging the same verified current snapshot now skips parsing and row writes;
+  retained payloads are still hashed and old snapshot heads can still be restored.
+- Last verified code checks: 233 pytest/Hypothesis tests, Ruff, format, strict
   mypy, settings/catalogue/schema checks and all five pre-commit hooks pass.
   Browser QA covered all ten previews, search, layers and queue links; desktop
   and 375 px mobile checks found no JavaScript errors or horizontal overflow.
@@ -101,8 +120,11 @@ Use [Phase 1 setup](docs/phase-1.md),
    Use the refreshed packet under `review/mixed-pilot-evidence-20261015/`, including
    its `review-gaps.json`. Its preview is http://127.0.0.1:8769/preview.html and the
    review queue is http://127.0.0.1:8768; restart those services if needed. The preview
-   is read-only. Scope approval does not approve geometry, classifications or facts.
-3. Resolve the recorded identity and geometry gaps before accepting sites:
+   is read-only and now displays the owner's 2026-10-15 approval of the existing
+   candidate identities/classifications and source geometry. Preserve that decision;
+   source evidence and valid production contracts remain separate requirements.
+3. Owner review of the displayed batch is complete. Resolve its remaining source
+   and geometry validation gaps before production acceptance:
    Gromovo is an unnamed parcel near two Wikidata records; Gadzhiyevo has an
    explicitly estimated outline. Olenya has three crossing zone/mask polygons
    and Gadzhiyevo has two. Novorossiysk lacks a contained pier/anchorage candidate;
@@ -110,8 +132,9 @@ Use [Phase 1 setup](docs/phase-1.md),
    military vehicle use. Inspect location, source scope and duplicates, including
    whether separately mapped parcels belong to one facility. Source points and
    approved access-test squares are not production boundaries.
-4. Obtain permitted sources for status/claim dates and dated unit garrison and
-   equipment links, then prepare sourced review bundles for owner decisions.
+4. Obtain permitted sources for status/claim dates and dated historical unit and
+   equipment evidence, then prepare validated structured review bundles. Reuse
+   existing owner approval for unchanged displayed content.
    Ground-unit labels alone do not establish an association or current deployment.
    Re-run `catalogue readiness --country RUS --minimum-sites 10 --require-type airbase --require-type naval_base --require-type garrison`
    after production acceptance. Keep Phase 2 incomplete until ten or more
@@ -153,9 +176,10 @@ acceptance remains open.
 
 Keep catalogue proposals/decisions and raw sources in the external workspace. Local
 workflow locking and recoverable acceptance are implemented; shared Colab/Drive
-checkpointing and locks remain Phase 7a work. Native Overpass OSM import and
-geometry preview pass. Native osmium and live GeoNames/Geofabrik imports still
-need validation. The basic transliteration is not full BGN/PCGN.
+checkpointing and locks remain Phase 7a work. Native Overpass OSM import, geometry
+preview and the bounded live GeoNames cities5000 import pass. Native osmium and
+live Geofabrik/full-country gazetteer imports remain unverified. The basic
+transliteration is not full BGN/PCGN.
 
 Phase 2 includes site/unit/equipment/source/taxonomy provenance, dated garrison
 and equipment links, reusable source classification and human-approved zones.

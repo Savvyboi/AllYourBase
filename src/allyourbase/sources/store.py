@@ -47,6 +47,8 @@ class Store:
             try:
                 connection.execute("""CREATE TABLE IF NOT EXISTS snapshots
                     (id VARCHAR PRIMARY KEY, manifest VARCHAR NOT NULL);
+                    CREATE TABLE IF NOT EXISTS ingestion_stats
+                    (snapshot_id VARCHAR PRIMARY KEY, parsed_records BIGINT NOT NULL);
                     CREATE TABLE IF NOT EXISTS records
                     (id VARCHAR PRIMARY KEY, source_id VARCHAR, kind VARCHAR, external_id VARCHAR,
                      content VARCHAR, match_key VARCHAR);
@@ -80,20 +82,27 @@ class Store:
         manifest, payload = verify_snapshot(manifest_path)
         created = 0
         count = 0
+        scope = canonical(
+            [
+                manifest.spec.source.id,
+                manifest.spec.connector,
+                manifest.spec.country,
+                sorted(manifest.spec.record_ids),
+            ]
+        )
         with self.connect() as connection:
+            previous = connection.execute(
+                "SELECT s.parsed_records FROM ingestion_stats s "
+                "JOIN heads h ON h.snapshot_id=s.snapshot_id WHERE h.scope=? AND s.snapshot_id=?",
+                [scope, manifest.id],
+            ).fetchone()
+            if previous is not None:
+                return {"parsed_records": int(previous[0]), "new_proposals": 0}
             connection.execute("BEGIN")
             try:
                 connection.execute(
                     "INSERT INTO snapshots VALUES (?, ?) ON CONFLICT DO NOTHING",
                     [manifest.id, manifest.model_dump_json()],
-                )
-                scope = canonical(
-                    [
-                        manifest.spec.source.id,
-                        manifest.spec.connector,
-                        manifest.spec.country,
-                        sorted(manifest.spec.record_ids),
-                    ]
                 )
                 connection.execute(
                     "INSERT INTO heads VALUES (?, ?) ON CONFLICT(scope) "
@@ -144,6 +153,11 @@ class Store:
                     count += 1
                 if selected - found:
                     raise InputError("selected source record IDs were not found in this country")
+                connection.execute(
+                    "INSERT INTO ingestion_stats VALUES (?, ?) ON CONFLICT(snapshot_id) "
+                    "DO UPDATE SET parsed_records=excluded.parsed_records",
+                    [manifest.id, count],
+                )
                 connection.execute("COMMIT")
             except BaseException:
                 connection.execute("ROLLBACK")

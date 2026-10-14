@@ -7,7 +7,7 @@
 </style>
 <h1>Mixed pilot source geometry review</h1>
 <p>PACKET_SCOPE</p>
-<p class="tag">Proposed only · source geometry and classifications await review</p>
+<p class="tag" id="approvalStatus">Proposed only · source geometry and classifications await review</p>
 <main>
 <section><input id="search" aria-label="Search candidates" placeholder="Search names or base type"><div id="list"></div></section>
 <section><h2 id="name"></h2><p id="summary"></p><div class="row"><label><input id="showZones" type="checkbox" checked> Show candidate zones</label><label><input id="showWater" type="checkbox" checked> Show water masks</label><a id="review" target="_blank" rel="noopener">Open source proposal in review queue</a></div>
@@ -21,6 +21,7 @@
 </main>
 <script>
 const packet=PACKET_DATA;
+if(packet.owner_approval)document.getElementById('approvalStatus').textContent='Owner approval recorded · dated evidence and validation gaps remain';
 const el=id=>document.getElementById(id);let selected=0;
 const gapLabels={owner_identity_and_location_review:'Confirm identity, location, and possible duplicates.',owner_geometry_and_zone_review:'Review the source boundary and each zone or mask.',sourced_status_and_claim_dates:'Supply dated evidence for status and other claims.',dated_unit_and_equipment_links:'Supply dated historical unit and equipment evidence.',compatible_monitoring_zone_geometry_or_role:'Supply a contained monitoring zone with a supported role.',crossing_source_geometry:'Resolve source polygons that cross the proposed boundary.',unstaged_zone_or_mask_evidence:'Stage the exact source snapshot for zones or masks missing review evidence.'};
 function queueLink(id,label){const a=document.createElement('a');a.href=packet.review_url+'/?proposal='+encodeURIComponent(id);a.target='_blank';a.rel='noopener';a.textContent=label;return a}
