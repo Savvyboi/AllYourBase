@@ -1,0 +1,33 @@
+# Discovery evidence only. P17 is a source claim, not a border decision.
+# Bound each class separately so airfields cannot crowd out other types.
+# Generic military bases remain unclassified; they are not inferred garrisons.
+# No people, deployments, equipment counts or current activity are requested.
+SELECT DISTINCT ?item ?itemLabel ?kind ?nameLocal ?coord ?icao ?siteType WHERE {
+  {
+    SELECT DISTINCT ?item ?siteType WHERE {
+      { SELECT DISTINCT ?item ("airbase" AS ?siteType) WHERE {
+          ?item wdt:P17 wd:Q159; wdt:P31/wdt:P279* wd:Q695850.
+          FILTER NOT EXISTS { ?item wdt:P31 wd:Q5 }
+        } ORDER BY ?item LIMIT 12 }
+      UNION
+      { SELECT DISTINCT ?item ("naval_base" AS ?siteType) WHERE {
+          ?item wdt:P17 wd:Q159; wdt:P31/wdt:P279* wd:Q1324633.
+          FILTER NOT EXISTS { ?item wdt:P31 wd:Q5 }
+        } ORDER BY ?item LIMIT 8 }
+      UNION
+      { SELECT DISTINCT ?item ("military_base" AS ?siteType) WHERE {
+          ?item wdt:P17 wd:Q159; wdt:P31 wd:Q245016.
+          FILTER NOT EXISTS { ?item wdt:P31/wdt:P279* wd:Q695850 }
+          FILTER NOT EXISTS { ?item wdt:P31/wdt:P279* wd:Q1324633 }
+          FILTER NOT EXISTS { ?item wdt:P31 wd:Q5 }
+        } ORDER BY ?item LIMIT 8 }
+    }
+  }
+  BIND("site" AS ?kind)
+  OPTIONAL { ?item wdt:P625 ?coord }
+  OPTIONAL { ?item wdt:P239 ?icao }
+  OPTIONAL { ?item rdfs:label ?nameLocal FILTER(LANG(?nameLocal) = "ru") }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en,ru" }
+}
+ORDER BY ?siteType ?item ?coord ?icao
+LIMIT 100

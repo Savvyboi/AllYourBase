@@ -1,0 +1,12 @@
+source:
+  id: wikidata-rus-sites-20261014
+  title: Wikidata Russian site discovery, 2026-10-14
+  url: https://www.wikidata.org/wiki/Wikidata:Data_access
+  publisher: Wikidata contributors
+  accessed: 2026-10-14
+  reuse_class: import
+  licence: CC0-1.0
+  attribution: Wikidata contributors, CC0
+connector: wikidata
+country: RUS
+download_url: https://query.wikidata.org/sparql

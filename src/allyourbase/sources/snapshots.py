@@ -112,7 +112,7 @@ def fetch_snapshot(
             name = "query.json"
         path = Path(temporary) / name
         headers = {
-            "User-Agent": f"AllYourBase/{__version__} source-ingestion (review-first)",
+            "User-Agent": f"AllYourBase/{__version__} source-ingestion (https://github.com/Savvyboi/AllYourBase)",
             "Accept": "application/sparql-results+json" if query else "*/*",
         }
         try:
@@ -129,6 +129,11 @@ def fetch_snapshot(
                                     "source exceeds the configured download byte limit"
                                 )
                             output.write(block)
+        except httpx.HTTPStatusError as exc:
+            raise InputError(
+                f"source download returned HTTP {exc.response.status_code}; "
+                "check endpoint or rate limits"
+            ) from None
         except httpx.HTTPError:
             raise InputError("source download failed; check endpoint and network") from None
         # Query text is part of the pinned input, so result provenance remains reproducible.

@@ -52,8 +52,17 @@ uv run --extra ingestion allyourbase catalogue accept PROPOSAL_ID bundle.json --
 uv run --extra ingestion allyourbase catalogue reject PROPOSAL_ID --reviewer owner --note "Reason"
 ```
 
-A bundle contains `sites`, `units`, `equipment` and `terms`. Entity objects use
-the existing catalogue schemas; `terms` maps facet names to taxonomy-term lists.
+A bundle contains `sites`, `units`, `equipment`, `terms` and optional
+`evidence_proposals` (a list of supporting proposal IDs). Open the main proposal,
+then click **+ Evidence** beside other queue records. This keeps all source records
+and citations visible while you edit the bundle. Reference the attached source
+IDs in each corresponding fact/zone/link; attaching evidence does not populate
+or approve facts. Supporting proposals must be active and pending or accepted.
+Rejected/superseded proposals, repeated IDs and the primary ID are refused.
+Acceptance preserves all attached snapshots and locators; supporting proposals
+keep their existing decision states. The primary proposal alone is accepted.
+
+Entity objects use the existing catalogue schemas; `terms` maps facet names to taxonomy-term lists.
 A bundle may update existing IDs. Review all changed claims, supply dates and
 citations, and preserve alternative claims rather than silently replacing a
 source disagreement. Geometry/status/branch/confidence are never inferred as
@@ -125,7 +134,7 @@ still Phase 7a work.
 
 ## Verification and remaining acceptance
 
-All 174 tests, Ruff, formatting, strict mypy, schema/catalogue/settings checks and
+All 192 tests, Ruff, formatting, strict mypy, schema/catalogue/settings checks and
 repository hooks pass. Browser checks found no JavaScript errors or horizontal
 overflow at 375 px. Desktop/mobile geometry previews, including antimeridian
 polygons, were visually inspected. Fictional tests cover permitted PDF extraction,
@@ -136,7 +145,7 @@ The pinned OurAirports CSV was fetched into the external `phase2-data` workspace
 with SHA-256 `61c82a74de991e138dc57e1fbc72b6f47da30db9954be4e414452e896f7d40d8`.
 The first import produced three proposals; the unchanged second import produced
 zero. Production catalogue checking still reports zero sites/units/equipment.
-Live Wikidata/GeoNames/Geofabrik imports and the native osmium adapter have not
+Live GeoNames/Geofabrik imports and the native osmium adapter have not
 been exercised on this machine. The PBF tool is not installed here.
 
 Next: gather reviewed boundary/zone sources for the pilot, expand to ten or more
@@ -144,3 +153,57 @@ sites across the required types, source dated home-garrison/equipment claims,
 and review them through this queue. Confirm the full pilot's provenance and zone
 previews before closing Phase 2. Event review remains Phase 5; no imagery analysis,
 scoring or publishing has been enabled.
+
+## Multi-source review and readiness continuation
+
+The bounded [Wikidata spec](../config/sources/wikidata-rus-sites.yaml) and
+[SPARQL query](../config/sources/queries/wikidata-rus-sites.rq) have been exercised.
+The import retains the exact query in its immutable payload. The fetcher supplies
+an identifiable project User-Agent, reads UTF-8 queries with or without the
+Windows BOM, and reports HTTP status codes without copying response bodies.
+
+```powershell
+uv run --extra ingestion allyourbase sources fetch config/sources/wikidata-rus-sites.yaml --query-file config/sources/queries/wikidata-rus-sites.rq --max-bytes 2000000
+```
+
+Retained snapshot `b4886266e3f0ae9da89677649cd20d456673a9d2b35ae0a726f1a90b945feabd`
+has payload SHA-256
+`b844632862b41c394605f7f9bc08d583a06662429ec5dadb7db271dd7ca0a617`.
+It staged 28 records: 12 airbase, 8 naval-base and 8 generic military-base source
+hints. Repeating stage on that manifest produced zero new proposals; matching
+created zero additional proposals. Together with OurAirports, the queue has 31
+site records. This is not a count of distinct or approved production sites.
+
+Wikidata's country association (`P17`) does not establish physical location or
+sovereignty. This discovery contains bases abroad, organizational entities,
+unnamed entities and potential duplicates. A generic military-base hint does not
+establish garrison status. All candidates need location/entity-identity review;
+none supplies an approved boundary, zone, status or dated unit/equipment link.
+Do not convert source points or Phase 1 squares into production geometry.
+Wikidata data is CC0; see its [official access guidance](https://www.wikidata.org/wiki/Wikidata:Data_access).
+
+The external development workspace has a review packet under
+`review/phase-2-evidence/review-packet.md`, with per-proposal JSON dossiers and a
+`readiness.json` report. Snapshots, full proposal evidence, databases and browser
+QA screenshots remain outside Git.
+
+```sh
+uv run --extra ingestion allyourbase catalogue readiness --country RUS --minimum-sites 10 --require-type airbase --require-type naval_base --require-type garrison
+```
+
+`catalogue check` checks contracts; `readiness` separately checks milestone evidence
+and exits 1 until complete. It requires the minimum production count, required
+site types, exact current records in reviewed bundles and retained matching source
+snapshots. Each site's reviewed unit must have a reviewed equipment link whose
+dated interval overlaps its garrison link. Open intervals are bounded by their
+`as_of` dates, never by today's retrieval date. Edited records, missing/changed
+source evidence and unfinished acceptance journals prevent readiness.
+This checks evidence completeness, not factual truth, current deployments or
+whether a reviewer actually inspected every polygon. Human review is still
+required. It currently reports zero production sites and `ready: false`.
+
+The continuation passes 192 tests and the required lint/type/schema/catalogue
+checks. Browser QA exercised evidence attachment, citation display and synthetic
+zone previews at 1280 px and 375 px with no JavaScript errors or horizontal
+overflow. Production acceptance still needs permitted boundary/zone sources,
+dated unit/equipment sources and owner decisions on at least ten real sites.
