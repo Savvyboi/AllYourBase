@@ -261,20 +261,23 @@ def run_monitor(
                     "errors": [{"code": "location_configuration_or_processing_error"}],
                 }
                 write_json(history / "checks" / location.id / f"{end.date()}-error.json", failure)
+        usage = {
+            "request_cap": config.max_requests,
+            "requests_used": config.max_requests - imagery.transport.remaining,
+            "reported_processing_units": sum(
+                o.processing_units or 0 for o in imagery.transport.observations
+            ),
+            "unknown_process_charges": sum(
+                o.operation == "process" and o.processing_units is None
+                for o in imagery.transport.observations
+            ),
+        }
         write_json(
             workspace / "runs" / (datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ") + ".json"),
             {
                 "statuses": statuses,
-                "request_cap": config.max_requests,
-                "requests_used": config.max_requests - imagery.transport.remaining,
+                **usage,
                 "observations": [asdict(o) for o in imagery.transport.observations],
-                "reported_processing_units": sum(
-                    o.processing_units or 0 for o in imagery.transport.observations
-                ),
-                "unknown_process_charges": sum(
-                    o.operation == "process" and o.processing_units is None
-                    for o in imagery.transport.observations
-                ),
             },
         )
         built = build_site(history, output)
@@ -283,6 +286,6 @@ def run_monitor(
         "site": built,
         "output": str(output),
         "live": live,
-        "requests_used": config.max_requests - imagery.transport.remaining,
+        **usage,
         "analysis_version": config.analysis_version(),
     }

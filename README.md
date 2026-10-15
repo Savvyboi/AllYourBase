@@ -33,6 +33,8 @@ the target is the seven complete days before it, and the baseline is the precedi
 28 days. Default external paths are `../monitor-data` (cache/usage),
 `../monitor-results` (JSON/PNG history), and `../monitor-site` (static output).
 Use `--workspace`, `--history` and `--output` to choose separate external directories.
+The CLI returns request counts, measured PU totals and a separate count of Process
+requests with unknown charges; detailed journals stay in the workspace.
 
 On this Windows workstation, the retained legacy review service may hold the old
 CLI executable open. Use PowerShell `$env:UV_PROJECT_ENVIRONMENT = '../monitor-env'`
@@ -89,8 +91,10 @@ an error, and allows other locations to continue.
 The live report is [savvyboi.github.io/AllYourBase](https://savvyboi.github.io/AllYourBase/).
 Its eight-file Pages artifact and six-file results branch contain only the expected
 site assets and small JSON/PNG records. Desktop/mobile browser checks pass. The
-next unattended run is scheduled for **2026-10-19 at 06:23 UTC**; its success and
-independent historical threshold validation remain open acceptance checks.
+next unattended run is scheduled for **2026-10-19 at 06:23 UTC**.
+[Historical validation](docs/historical-validation.md) found substantial radar
+flags in pre-event controls; initial thresholds remain unaccepted. The unattended
+run and further independent validation remain open acceptance checks.
 
 ## What results mean
 
@@ -112,7 +116,8 @@ onto the 10 m grid.
 Weather, moisture, vegetation, snow and misalignment can produce changes. These
 reports do not establish cause, activity, deployments, object counts or a confidence
 percentage. A 10 m output grid does not guarantee 10 m resolving power. Independent
-historical ground truth and threshold acceptance remain open.
+historical evaluation has not established reliable thresholds; pre-event controls
+also produce substantial radar flags. See [historical validation](docs/historical-validation.md).
 
 ## Verify
 
@@ -122,7 +127,7 @@ uv run --extra access --extra ingestion --extra review --extra monitor python sc
 uv run --extra access --extra ingestion --extra review --extra monitor pre-commit run --all-files
 ```
 
-Current validation: 294 tests, required lint/type/schema/catalogue checks, live
+Current validation: 295 tests, required lint/type/schema/catalogue checks, live
 historical cutouts, repeat cache/history checks, desktop and 375 px browser QA.
 Legacy catalogue/access commands are retained; their roadmap is archived under
 [the superseded plan](docs/legacy-build-plan.md).
