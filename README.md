@@ -67,10 +67,11 @@ latitude/longitude in YAML; API transformations explicitly use longitude/latitud
 
 The confirmed repository is [Savvyboi/AllYourBase](https://github.com/Savvyboi/AllYourBase).
 CDSE OAuth credentials have been stored as encrypted repository Actions secrets,
-and Pages is configured with **GitHub Actions** as its build source. The workflow
-code is proposed through a draft PR; it has not been merged or deployed.
+and Pages uses **GitHub Actions** as its build source. The MVP and workflow fix
+are merged in PRs #9 and #10. The [first manual publication](https://github.com/Savvyboi/AllYourBase/actions/runs/38756679440)
+succeeded on 2026-10-15 for exclusive end date 2026-10-12.
 
-After review/merge, open **Actions → Weekly ground-change monitor → Run workflow**.
+For a manual run, open **Actions → Weekly ground-change monitor → Run workflow**.
 Leave `end_date` empty for the latest complete days, or enter an exclusive UTC date
 for a historical run. The workflow will:
 
@@ -85,9 +86,11 @@ from Git on fresh runners. Raw rasters and credentials never enter the results
 branch or Pages artifact. A location failure preserves earlier detections, records
 an error, and allows other locations to continue.
 
-The assigned Pages URL is [savvyboi.github.io/AllYourBase](https://savvyboi.github.io/AllYourBase/).
-It is configured but no successful MVP deployment has been verified yet. Completion
-requires a successful manual publication and the following unattended scheduled run.
+The live report is [savvyboi.github.io/AllYourBase](https://savvyboi.github.io/AllYourBase/).
+Its eight-file Pages artifact and six-file results branch contain only the expected
+site assets and small JSON/PNG records. Desktop/mobile browser checks pass. The
+next unattended run is scheduled for **2026-10-19 at 06:23 UTC**; its success and
+independent historical threshold validation remain open acceptance checks.
 
 ## What results mean
 

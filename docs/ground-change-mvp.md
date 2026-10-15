@@ -114,16 +114,38 @@ reports. Cache is optional; history survives a fresh runner through Git.
 Repository Actions is enabled. The existing working CDSE OAuth credentials were
 encrypted with the repository public key and stored as `CDSE_CLIENT_ID` and
 `CDSE_CLIENT_SECRET`; values were not written to local files, output or Git.
-Pages is configured with build type `workflow`, assigning
-[savvyboi.github.io/AllYourBase](https://savvyboi.github.io/AllYourBase/). This is
-configuration, not a verified deployment. The setup receipt contains metadata
-only, outside Git at `monitor-data/github-setup.json`.
+Pages uses build type `workflow`. The MVP merged in [PR #9](https://github.com/Savvyboi/AllYourBase/pull/9).
+GitHub rejected the initial dispatch before any imagery request because
+`runner.temp` was used in job-level `env`. [PR #10](https://github.com/Savvyboi/AllYourBase/pull/10)
+moved it to supported step-level environments and added actionlint v1.7.12 to CI.
+The validator rejects the original workflow and accepts the corrected workflows;
+all 294 tests and required checks/hooks also pass on the clean GitHub runner.
 
-The code is on a draft PR and remains unmerged. After review/merge, run the manual
-workflow and verify the public page, retained results branch and secret-free
-artifact. Then verify the following unattended weekly run. Those live deployment
-checks and independent real-example threshold acceptance remain open; the MVP
-must not be reported complete yet.
+The [first manual run](https://github.com/Savvyboi/AllYourBase/actions/runs/38756679440)
+on 2026-10-15 succeeded at code `76991305c6c781d94aae46aa0c74643ab9d5eb43`, using
+exclusive end 2026-10-12. It made 28 HTTP requests, retained one radar candidate,
+and reproduced the local numerical/provenance result, including the optical
+quiet comparison and three data gaps. The public notice additionally states
+that thresholds are unvalidated prototypes. The ephemeral runner's PU journal
+was not retained, so its measured PU total is unknown; the earlier local PU
+figures are not substituted for this run.
+
+The `monitor-results` branch at `d3c93e27a6fac199025a5812e801e910bf218c8f`
+contains exactly six expected JSON/PNG files. The downloaded Pages artifact
+contains exactly eight expected site/report/preview files, with no raw rasters
+or credentials. The optional hidden `.nojekyll` marker is omitted by artifact
+upload; the workflow serves static files directly. Public `reports.json` matches
+the artifact, and the [live report](https://savvyboi.github.io/AllYourBase/) passes
+1280 px desktop and 375 px mobile browser checks for images, filters, detail
+links, source details, no overflow and no JS/HTTP errors. Both screenshots were
+visually inspected. Deployment succeeded on its first attempt.
+
+Metadata-only receipts and screenshots stay outside Git under
+`monitor-data/publication-validation.json` and `monitor-data/qa/public-*`.
+The next weekly run is scheduled for **2026-10-19 06:23 UTC**. Its unattended
+execution, correctly dated output and retained history still require verification.
+Independent real-example ground truth and initial threshold acceptance also remain
+open. The MVP must not be reported complete yet.
 
 Official references: [CDSE authentication](https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Overview/Authentication.html),
 [Sentinel-2 L2A](https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/S2L2A.html),

@@ -26,8 +26,8 @@ are outside the active MVP.
 | 3 Radar access and comparison | IW VV/VH, relative-orbit/direction/mode/polarisation groups, LEE/terrain correction, positive power/masks, linear median before dB | Skip unverified geometry; do not mix passes or duplicate products. |
 | 4 Prototype detection | Every usable target acquisition, >=2 independent baseline observations per pixel, >=70% common coverage, optical >0.10, radar >3 dB, >=9 connected cells | Independently sourced historical ground truth and initial threshold acceptance remain open. |
 | 5 Report and history | Deterministic detection IDs, separate sensor areas/overlap labels, composite/current/patch previews, statuses, source IDs/version/thresholds/attribution, preserved history | Continue validation on real examples without inferring cause. |
-| 6 Actions and Pages | Weekly/manual triggers, results branch, concurrency, permissions, official Pages actions, deployment retries; workflow code ready | Repository secrets and workflow-based Pages are configured. Publish via a manual workflow and verify the live page after code review/merge. |
-| 7 Unattended acceptance | Not yet achieved | The next scheduled run must succeed with correctly dated output and retained history on a fresh runner. |
+| 6 Actions and Pages | PRs #9/#10 merged; first manual run succeeded on 2026-10-15 for end 2026-10-12; expected results branch/artifact and public desktop/mobile report verified; actionlint added to CI | First publication accepted. Retain explicit error/data-gap status and small report history. |
+| 7 Unattended acceptance | Not yet achieved | Next scheduled run: 2026-10-19 06:23 UTC. It must succeed with correctly dated output and retained history on a fresh runner. |
 
 All 294 offline tests and required lint/type/catalogue/schema checks pass. The local
 historical run ending 2026-10-12 produced one radar possible-change report; optical
@@ -47,6 +47,7 @@ possible changes is the owner's new requested policy; it does not authorize merg
 code PRs without review.
 
 See [MVP execution and validation](ground-change-mvp.md) and
-[ADR 0004](adr/0004-ground-change-mvp.md). Manual Pages publication, a subsequent
+[ADR 0004](adr/0004-ground-change-mvp.md). The [first manual publication](https://github.com/Savvyboi/AllYourBase/actions/runs/38756679440)
+and [live page](https://savvyboi.github.io/AllYourBase/) are verified. The subsequent
 unattended weekly run and real historical ground truth remain unverified. Do not
 mark the MVP complete while those checks remain open.
