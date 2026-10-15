@@ -25,7 +25,6 @@ jobs:
       contents: write
       pages: read
     env:
-      UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/monitor-env
       MONITOR_END_DATE: ${{ inputs.end_date }}
     steps:
       - uses: actions/checkout@v6
@@ -33,6 +32,8 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install locked MVP dependencies
+        env:
+          UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/monitor-env
         run: uv sync --locked --extra monitor --no-dev
       - name: Restore persistent results branch
         shell: bash
@@ -46,6 +47,7 @@ jobs:
           fi
       - name: Analyse latest seven complete UTC days
         env:
+          UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/monitor-env
           CDSE_CLIENT_ID: ${{ secrets.CDSE_CLIENT_ID }}
           CDSE_CLIENT_SECRET: ${{ secrets.CDSE_CLIENT_SECRET }}
         shell: bash
