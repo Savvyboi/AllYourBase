@@ -24,12 +24,12 @@ are outside the active MVP.
 | 1 Coordinates, grid and UTC windows | Strict coordinates, fixed metric 100×100 grid, persistent grid identity, exclusive historical end date, 7-day target/28-day earlier baseline | Keep coordinate changes under a new stable ID. |
 | 2 Optical access and masks | CDSE Catalog/Process, FLOAT32 reflectance/SCL/dataMask cutouts, exact scene/grid verification, nearest categorical sampling, land/cloud buffer | Preserve live source provenance and explicit data gaps. |
 | 3 Radar access and comparison | IW VV/VH, relative-orbit/direction/mode/polarisation groups, LEE/terrain correction, positive power/masks, linear median before dB | Skip unverified geometry; do not mix passes or duplicate products. |
-| 4 Prototype detection | Every usable target acquisition, >=2 independent baseline observations per pixel, >=70% common coverage, optical >0.10, radar >3 dB, >=9 connected cells | Independently sourced historical ground truth and initial threshold acceptance remain open. |
+| 4 Prototype detection | Every usable target acquisition, >=2 independent baseline observations per pixel, >=70% common coverage, optical >0.10, radar >3 dB, >=9 connected cells | Independent CEMS event/control evaluation attempted; pre-event radar flags prevent threshold acceptance. See [historical validation](historical-validation.md). |
 | 5 Report and history | Deterministic detection IDs, separate sensor areas/overlap labels, composite/current/patch previews, statuses, source IDs/version/thresholds/attribution, preserved history | Continue validation on real examples without inferring cause. |
 | 6 Actions and Pages | PRs #9/#10 merged; first manual run succeeded on 2026-10-15 for end 2026-10-12; expected results branch/artifact and public desktop/mobile report verified; actionlint added to CI | First publication accepted. Retain explicit error/data-gap status and small report history. |
 | 7 Unattended acceptance | Not yet achieved | Next scheduled run: 2026-10-19 06:23 UTC. It must succeed with correctly dated output and retained history on a fresh runner. |
 
-All 294 offline tests and required lint/type/catalogue/schema checks pass. The local
+All 295 offline tests and required lint/type/catalogue/schema checks pass. The local
 historical run ending 2026-10-12 produced one radar possible-change report; optical
 had one usable quiet comparison and three data gaps. Cached rerun produced the same
 single detection and no new Process requests. Desktop/mobile browser QA and visual
@@ -49,5 +49,6 @@ code PRs without review.
 See [MVP execution and validation](ground-change-mvp.md) and
 [ADR 0004](adr/0004-ground-change-mvp.md). The [first manual publication](https://github.com/Savvyboi/AllYourBase/actions/runs/38756679440)
 and [live page](https://savvyboi.github.io/AllYourBase/) are verified. The subsequent
-unattended weekly run and real historical ground truth remain unverified. Do not
-mark the MVP complete while those checks remain open.
+unattended weekly run remains unverified. The independent historical event/control
+check is documented, but initial thresholds failed the quiet-control expectation
+and are not accepted. Do not mark the MVP complete while these checks remain open.

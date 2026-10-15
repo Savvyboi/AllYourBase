@@ -42,7 +42,7 @@ observed coverage; missing data is `insufficient_data`, and failures are `error`
 
 ## Implementation and evidence
 
-- PRs #1–#10 are merged. PR #8 merged at `9e0269b`; all previous source snapshots,
+- PRs #1–#11 are merged. PR #8 merged at `9e0269b`; all previous source snapshots,
   approval archives and provider evidence remain intact and are historical records.
 - Active implementation is under `src/allyourbase/monitor/`: configuration/grid,
   fetch, prepare, detect, report and CLI modules. `allyourbase monitor run` supports
@@ -62,12 +62,21 @@ observed coverage; missing data is `insufficient_data`, and failures are `error`
 - External workspaces: `../monitor-data` for cache/usage/QA, `../monitor-results`
   for small JSON/PNG history, `../monitor-site` for generated static output.
   Earlier `../phase1-data` and `../phase2-data` are preserved. All are outside Git.
-- 294 tests, Ruff, formatting, strict mypy and all legacy settings/catalogue/schema
+- 295 tests, Ruff, formatting, strict mypy and all legacy settings/catalogue/schema
   checks pass. Headless Edge checks of desktop and 375 px mobile verify images,
   filter buttons, detail links, provenance, no overflow and no JS/HTTP errors.
   A flagged radar comparison and quiet optical comparison were visually inspected.
-- The requested known-change fixture passes; real historical cause/ground truth
-  and threshold calibration remain unverified. Do not mark thresholds accepted.
+- The requested known-change fixture passes. Independent historical CEMS EMSR773
+  evaluation is documented in `docs/historical-validation.md`: radar flags the
+  event and substantial pre-event control areas, including matching-orbit cached
+  controls. Optical is insufficient in both live windows. Thresholds are not
+  accepted; no cause or accuracy is established. No validation reports are public.
+  External receipts: `../monitor-data/validation-emsr773/`. Two bounded live runs
+  used 29 + 7 requests and reported 6.397828733598581 + 1.0572525981033687 PU,
+  with zero unknown Process charges; the follow-up control used no network.
+- The CLI run summary now includes safe measured/unknown usage aggregates from
+  the local journal, allowing future Actions logs to retain those totals. Full
+  observations and payloads are excluded. No detection algorithm/config changes.
 - Weekly/manual Actions workflow is implemented in `.github/workflows/monitor.yml`:
   persistent `monitor-results` branch, single-run concurrency, explicit permissions,
   official Pages artifact/deployment actions and bounded deployment retries.
@@ -81,7 +90,8 @@ observed coverage; missing data is `insufficient_data`, and failures are `error`
   retained, so that run's PU total is unknown. Receipt: external
   `../monitor-data/publication-validation.json`; run ID `38756679440`.
   Next unattended scheduled run: 2026-10-19 06:23 UTC; its execution/history and
-  independent ground truth remain unverified. Do not mark the MVP complete yet.
+  further independent evaluation/threshold acceptance remain open. Do not mark
+  the MVP complete yet.
 
 ## Working rules
 

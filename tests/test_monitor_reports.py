@@ -13,6 +13,7 @@ from allyourbase.monitor.fetch import Cutout
 from allyourbase.monitor.main import SyntheticImagery, check_location, run_monitor
 from allyourbase.monitor.report import build_site
 from allyourbase.providers.contracts import Acquisition, ProviderError
+from allyourbase.providers.http import RequestObservation
 
 
 def location(identifier: str = "synthetic-change") -> Location:
@@ -239,3 +240,48 @@ def test_fresh_git_runners_restore_history_without_duplicate_reports(
     assert len(list((restored / "detections").glob("*.json"))) == 2
     assert not list(restored.rglob("*.tif"))
     assert build_site(restored, tmp_path / "fresh-site")["detections"] == 2
+
+
+def test_run_summary_retains_measured_and_unknown_usage_without_request_payloads(
+    tmp_path: Path, monitor_config: MonitorConfig, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from types import SimpleNamespace
+
+    class MeteredImagery(SyntheticImagery):
+        def __init__(self, *args: Any) -> None:
+            super().__init__(date(2020, 10, 12), False)
+            self.transport = SimpleNamespace(
+                remaining=monitor_config.max_requests - 4,
+                observations=[
+                    RequestObservation("cdse", "token", 200, 0.1, None),
+                    RequestObservation("cdse", "catalogue", 200, 0.2, 0.04),
+                    RequestObservation("cdse", "process", 200, 0.3, 1.25),
+                    RequestObservation("cdse", "process", None, 0.4, None),
+                ],
+            )
+
+    monkeypatch.setattr("allyourbase.monitor.main.Fetcher", MeteredImagery)
+    workspace = tmp_path / "data"
+    result = run_monitor(
+        monitor_config,
+        Locations(sites=[location("quiet")]),
+        workspace,
+        tmp_path / "history",
+        tmp_path / "site",
+        date(2020, 10, 12),
+        live=True,
+    )
+    journal = json.loads(next((workspace / "runs").glob("*.json")).read_text())
+    assert result["requests_used"] == 4
+    assert result["request_cap"] == monitor_config.max_requests
+    assert result["reported_processing_units"] == pytest.approx(1.29)
+    assert result["unknown_process_charges"] == 1
+    for key in (
+        "requests_used",
+        "request_cap",
+        "reported_processing_units",
+        "unknown_process_charges",
+    ):
+        assert result[key] == journal[key]
+    assert "observations" not in result
+    assert not any(k in json.dumps(result) for k in ("access_token", "client_secret", "headers"))

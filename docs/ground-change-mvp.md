@@ -88,7 +88,7 @@ The retained Phase 1/2 workspaces and approval archives are unchanged.
 
 ## Verification
 
-All 294 tests, Ruff, formatting, strict mypy, legacy settings/catalogue/schema
+All 295 tests, Ruff, formatting, strict mypy, legacy settings/catalogue/schema
 checks and repository hooks pass. New coverage includes unchanged/changed fixtures,
 cloud/no-data/snow/water masks, pixelwise observation counts, linear radar medians,
 missing/mismatched orbits, wrong scenes/transforms, cache integrity, request caps,
@@ -100,8 +100,11 @@ detail links, source details and no JS/HTTP errors or overflow. Screenshots and
 QA JSON remain under `monitor-data/qa/`. The flagged radar preview and a quiet
 optical before/composite pair were visually inspected from the verified cache.
 This is output/visual verification, not independent ground truth or threshold
-calibration. The known synthetic changed/quiet cases pass; acceptance of initial
-thresholds against independently known historical examples remains open.
+calibration. The known synthetic changed/quiet cases pass. A subsequent
+[independent CEMS event/control evaluation](historical-validation.md) produces
+radar candidates in both periods, including matching-orbit cached controls.
+Initial thresholds are not accepted; optical comparisons lack required coverage.
+No validation location or report was added to the published production site.
 
 ## Actions, Pages and remaining acceptance
 
@@ -144,8 +147,9 @@ Metadata-only receipts and screenshots stay outside Git under
 `monitor-data/publication-validation.json` and `monitor-data/qa/public-*`.
 The next weekly run is scheduled for **2026-10-19 06:23 UTC**. Its unattended
 execution, correctly dated output and retained history still require verification.
-Independent real-example ground truth and initial threshold acceptance also remain
-open. The MVP must not be reported complete yet.
+The [historical evaluation](historical-validation.md) supplies independent event
+evidence but fails the quiet-control expectation; further independent evaluation
+and threshold acceptance remain open. The MVP must not be reported complete yet.
 
 Official references: [CDSE authentication](https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Overview/Authentication.html),
 [Sentinel-2 L2A](https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/S2L2A.html),
