@@ -1,0 +1,21 @@
+{
+  "location": {
+    "id": "chkalovsky",
+    "name": "Chkalovsky",
+    "latitude": 55.8783,
+    "longitude": 38.061699,
+    "size_m": 1000
+  },
+  "grid": {
+    "epsg": 32637,
+    "bbox": [
+      440797.42745972815,
+      6192432.77737105,
+      441797.42745972815,
+      6193432.77737105
+    ],
+    "width": 100,
+    "height": 100,
+    "resolution_m": 10
+  }
+}
