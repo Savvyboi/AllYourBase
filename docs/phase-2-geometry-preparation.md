@@ -1,5 +1,9 @@
 # Phase 2 monitoring geometry preparation
 
+> Historical catalogue work. The 2026-10-15 scope change supersedes its
+> acceptance gates; see the [active ground-change plan](build-plan.md).
+
+
 Updated 2026-10-15 (Europe/Helsinki).
 
 The existing owner-approved ten-candidate batch now has 47 usable source zones

@@ -1,5 +1,9 @@
 # Phase 2 catalogue ingestion and review
 
+> Historical catalogue work. The 2026-10-15 scope change supersedes its
+> acceptance gates; see the [active ground-change plan](build-plan.md).
+
+
 Updated 2026-10-15 (Europe/Helsinki).
 
 The source-to-review workflow is implemented. Phase 2 acceptance remains open:

@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "allyourbase"
 version = "0.3.0"
-description = "Local, review-first Sentinel monitoring with a sourced geospatial catalogue"
+description = "Coordinate-based Sentinel ground-change monitoring and static reports"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -21,6 +21,7 @@ allyourbase = "allyourbase.cli:app"
 basewatch = "allyourbase.cli:app"
 
 [project.optional-dependencies]
+monitor = ["rasterio>=1.4,<2", "numpy>=2,<3", "pyproj>=3.7,<4", "Pillow>=11,<13", "filelock>=3,<4"]
 access = ["rasterio>=1.4,<2", "numpy>=2,<3", "pyproj>=3.7,<4", "keyring>=25,<27", "boto3>=1.35,<2"]
 imagery = [
   "pystac-client>=0.8,<1", "odc-stac>=0.3,<1", "rasterio>=1.4,<2",

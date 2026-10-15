@@ -1,5 +1,9 @@
 # Phase 2 structured review bundle preparation
 
+> Historical catalogue work. The 2026-10-15 scope change supersedes its
+> acceptance gates; see the [active ground-change plan](build-plan.md).
+
+
 Updated 2026-10-15 (Europe/Helsinki). This continuation extends draft
 [PR #8](https://github.com/Savvyboi/AllYourBase/pull/8); it is not merged.
 

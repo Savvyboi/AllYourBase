@@ -13,7 +13,7 @@ repos:
         types: [python]
       - id: mypy
         name: Mypy
-        entry: uv run --extra access --extra ingestion --extra review mypy src tests
+        entry: uv run --extra access --extra ingestion --extra review --extra monitor mypy src tests
         language: system
         pass_filenames: false
         types: [python]

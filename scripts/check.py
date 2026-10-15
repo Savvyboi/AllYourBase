@@ -2,7 +2,18 @@
 
 import subprocess
 
-PREFIX = ["uv", "run", "--extra", "access", "--extra", "ingestion", "--extra", "review"]
+PREFIX = [
+    "uv",
+    "run",
+    "--extra",
+    "access",
+    "--extra",
+    "ingestion",
+    "--extra",
+    "review",
+    "--extra",
+    "monitor",
+]
 COMMANDS = [
     [*PREFIX, "ruff", "check", "."],
     [*PREFIX, "ruff", "format", "--check", "."],

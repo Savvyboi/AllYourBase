@@ -1,0 +1,105 @@
+name: Weekly ground-change monitor
+
+on:
+  schedule:
+    - cron: '23 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      end_date:
+        description: 'Exclusive UTC end date (YYYY-MM-DD); blank = today UTC'
+        required: false
+        type: string
+
+concurrency:
+  group: ground-change-monitor
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pages: read
+    env:
+      UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/monitor-env
+      MONITOR_END_DATE: ${{ inputs.end_date }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          python-version: '3.12'
+      - name: Install locked MVP dependencies
+        run: uv sync --locked --extra monitor --no-dev
+      - name: Restore persistent results branch
+        shell: bash
+        run: |
+          if git ls-remote --exit-code origin refs/heads/monitor-results > /dev/null 2>&1; then
+            git fetch origin monitor-results
+            git worktree add --detach "$RUNNER_TEMP/monitor-results" FETCH_HEAD
+          else
+            git worktree add --detach "$RUNNER_TEMP/monitor-results" HEAD
+            git -C "$RUNNER_TEMP/monitor-results" switch --orphan monitor-results
+          fi
+      - name: Analyse latest seven complete UTC days
+        env:
+          CDSE_CLIENT_ID: ${{ secrets.CDSE_CLIENT_ID }}
+          CDSE_CLIENT_SECRET: ${{ secrets.CDSE_CLIENT_SECRET }}
+        shell: bash
+        run: |
+          if [[ -z "$CDSE_CLIENT_ID" || -z "$CDSE_CLIENT_SECRET" ]]; then
+            echo 'Add CDSE_CLIENT_ID and CDSE_CLIENT_SECRET as repository Actions secrets.'
+            exit 1
+          fi
+          args=()
+          if [[ -n "$MONITOR_END_DATE" ]]; then
+            args+=(--end-date "$MONITOR_END_DATE")
+          fi
+          uv run --locked --extra monitor --no-dev allyourbase monitor run --live \
+            --workspace "$RUNNER_TEMP/monitor-data" \
+            --history "$RUNNER_TEMP/monitor-results" \
+            --output "$RUNNER_TEMP/monitor-site" "${args[@]}"
+      - name: Persist small reports and previews
+        shell: bash
+        run: |
+          git -C "$RUNNER_TEMP/monitor-results" config user.name 'github-actions[bot]'
+          git -C "$RUNNER_TEMP/monitor-results" config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C "$RUNNER_TEMP/monitor-results" add --all
+          if ! git -C "$RUNNER_TEMP/monitor-results" diff --cached --quiet; then
+            git -C "$RUNNER_TEMP/monitor-results" commit -m 'Update Sentinel ground-change reports'
+          fi
+          git -C "$RUNNER_TEMP/monitor-results" push origin HEAD:refs/heads/monitor-results
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload complete static site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/monitor-site
+
+  deploy:
+    needs: analyse
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.first.outputs.page_url || steps.second.outputs.page_url || steps.third.outputs.page_url }}
+    steps:
+      - name: Deploy Pages
+        id: first
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - name: Retry Pages deployment
+        id: second
+        if: steps.first.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - name: Final Pages deployment attempt
+        id: third
+        if: steps.first.outcome == 'failure' && steps.second.outcome == 'failure'
+        uses: actions/deploy-pages@v4

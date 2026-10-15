@@ -7,6 +7,7 @@ import pytest
 from allyourbase.loading import load_model
 from allyourbase.models.catalogue import Source
 from allyourbase.models.settings import Settings
+from allyourbase.monitor.config import MonitorConfig
 from allyourbase.sources.contracts import SourceSpec
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,3 +54,8 @@ def spec() -> SourceSpec:
         connector="ourairports",
         country="RUS",
     )
+
+
+@pytest.fixture
+def monitor_config(root: Path) -> "MonitorConfig":
+    return load_model(root / "config/monitor.yaml", MonitorConfig)
