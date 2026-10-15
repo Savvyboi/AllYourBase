@@ -13,7 +13,7 @@ and [legacy guide](docs/legacy-agent-guide.md); its milestones no longer gate th
 Do not resume catalogue research or ask for old packet approval as a prerequisite.
 
 The MVP uses `sites.yaml`, one location initially, a fixed 1 km metric square and
-100 Ã— 100 cells at 10 m spacing. It compares every usable acquisition in the latest
+100 × 100 cells at 10 m spacing. It compares every usable acquisition in the latest
 seven complete UTC days with the preceding 28 days. `--end-date` is an exclusive
 UTC date for historical runs. Start location: Chkalovsky, using the retained
 OurAirports UUMU centre. The owner authorized using any existing approved base
@@ -22,7 +22,7 @@ on 2026-10-15. This square is a processing window, not a surveyed facility bound
 Use CDSE Sentinel Hub Catalog and Process APIs, OAuth credentials, numerical TIFFs,
 one acquisition at a time and exact grid/scene verification. Optical uses B02,
 B03, B04, B08, SCL and dataMask. Radar uses IW VV/VH, terrain gamma-zero,
-orthorectification, Copernicus 30 m DEM, LEE 3Ã—3 and data/shadow masks. A 10 m
+orthorectification, Copernicus 30 m DEM, LEE 3×3 and data/shadow masks. A 10 m
 grid does not imply 10 m resolving power. Preserve product identity, including
 COG suffixes. Unknown relative orbit means no radar comparison.
 
@@ -42,7 +42,7 @@ observed coverage; missing data is `insufficient_data`, and failures are `error`
 
 ## Implementation and evidence
 
-- PRs #1â€“#8 are merged. PR #8 merged at `9e0269b`; all previous source snapshots,
+- PRs #1–#10 are merged. PR #8 merged at `9e0269b`; all previous source snapshots,
   approval archives and provider evidence remain intact and are historical records.
 - Active implementation is under `src/allyourbase/monitor/`: configuration/grid,
   fetch, prepare, detect, report and CLI modules. `allyourbase monitor run` supports
@@ -71,9 +71,17 @@ observed coverage; missing data is `insufficient_data`, and failures are `error`
 - Weekly/manual Actions workflow is implemented in `.github/workflows/monitor.yml`:
   persistent `monitor-results` branch, single-run concurrency, explicit permissions,
   official Pages artifact/deployment actions and bounded deployment retries.
-  Repository Actions secrets and workflow-based Pages are configured.
-  Manual Pages publication and the following unattended scheduled run still need
-  live verification. Do not mark the MVP complete until those acceptance checks pass.
+  Repository Actions secrets and workflow-based Pages are configured. PR #9 and
+  required workflow fix #10 are merged. Actionlint v1.7.12 validates workflows in CI.
+  First manual publication succeeded on 2026-10-15 for end 2026-10-12 at code
+  `76991305c6c781d94aae46aa0c74643ab9d5eb43`: 28 requests, one radar candidate,
+  verified six-file results branch and eight-file Pages artifact, working public
+  desktop/mobile report at https://savvyboi.github.io/AllYourBase/. Numerical
+  provenance matches the local run. The ephemeral Actions PU journal was not
+  retained, so that run's PU total is unknown. Receipt: external
+  `../monitor-data/publication-validation.json`; run ID `38756679440`.
+  Next unattended scheduled run: 2026-10-19 06:23 UTC; its execution/history and
+  independent ground truth remain unverified. Do not mark the MVP complete yet.
 
 ## Working rules
 
