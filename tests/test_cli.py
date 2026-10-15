@@ -85,3 +85,21 @@ def test_version() -> None:
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0, result.output
     assert "0.3.0" in result.stdout
+
+
+@pytest.mark.parametrize("encoding", ["cp1252", "utf-8"])
+def test_source_json_preserves_cyrillic_in_redirected_stream(
+    monkeypatch: pytest.MonkeyPatch, encoding: str
+) -> None:
+    import io
+    import sys
+
+    from allyourbase.sources.commands import echo
+
+    buffer = io.BytesIO()
+    stream = io.TextIOWrapper(buffer, encoding=encoding)
+    monkeypatch.setattr(sys, "stdout", stream)
+    value = {"name": "Синтетический источник"}
+    echo(value)
+    stream.flush()
+    assert json.loads(buffer.getvalue().decode(encoding)) == value

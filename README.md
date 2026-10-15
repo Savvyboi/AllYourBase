@@ -64,6 +64,9 @@ Git metadata and the virtual environment are omitted from the source archive.
   provide CLI review with validated bundles and provenance-preserving writes.
   Supporting source proposals can be attached to one bundle; `catalogue readiness`
   checks milestone evidence separately from structural catalogue validity.
+- `catalogue prepare-geometry/prepare-bundles` reuses approved source packets,
+  validates geometry and prepares incomplete review drafts with exact evidence
+  and missing-field worklists. See [bundle preparation](docs/phase-2-bundle-preparation.md).
 - `providers validate-optical` verifies existing optical band files and provenance
   without making network requests.
 

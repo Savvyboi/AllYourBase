@@ -177,3 +177,28 @@ validating the five crossing polygons, supplying supported roles/geometry for
 four candidates, and retaining source-dated status and historical evidence.
 Approval dates do not populate factual claim dates. Keep the recorded decision
 for unchanged content; changed source content uses a different review ID.
+
+
+## Monitoring geometry preparation continuation (2026-10-15)
+
+PR #7 is merged. The [geometry preparation record](phase-2-geometry-preparation.md)
+documents 47 usable contained source zones across six candidates, transparent
+zone-level water-mask handling, four remaining primary-zone gaps and two pending
+historical evidence notes. The five crossing source water polygons are deferred
+because they do not overlap selected monitoring zones; the source packet and its
+approval remain intact. All 243 tests, required checks and desktop/mobile preview
+checks pass. No production records or source decisions were accepted; milestone
+readiness remains false.
+
+
+## Structured bundle continuation (2026-10-15)
+
+Draft [PR #8](https://github.com/Savvyboi/AllYourBase/pull/8) remains open and now
+prepares ten incomplete structured review bundles with exact source evidence and
+validation worklists. The existing owner approval and 47 contained zones are
+preserved; four zone gaps and factual evidence remain. The two pending historical
+notes pass retained-snapshot integrity checks, while their original references
+and modern footprint correspondence remain unverified. See
+[bundle preparation](phase-2-bundle-preparation.md) for reproduction, source
+limitations and 254 passing tests plus required checks. Production acceptance
+and milestone readiness remain incomplete.

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prepared monitoring geometry</title>
+<style>
+:root{font:16px system-ui;color:#e5edf3;background:#101820;color-scheme:dark}body{max-width:1440px;margin:auto;padding:24px}h1{font-size:28px}h2{font-size:22px}p,li{line-height:1.5}p{color:#b6c6d1}main{display:grid;grid-template-columns:310px 1fr;gap:24px;margin-top:24px}section{min-width:0}button,input{font:inherit;border:1px solid #476174;border-radius:6px;background:#172734;color:inherit;padding:10px}button{cursor:pointer;text-align:left}button[aria-current=true]{background:#294657;border-color:#77c7ff}#list{display:grid;gap:8px;max-height:680px;overflow:auto}#list button span{display:block;color:#acc1ce;font-size:13px;margin-top:5px}svg{width:100%;height:460px;border:1px solid #476174;border-radius:8px;background:#172734}a{color:#77c7ff}#search{box-sizing:border-box;width:100%;margin-bottom:12px}li{margin:6px 0}#status{color:#ffcf70}#deferred{max-height:300px;overflow:auto}code{overflow-wrap:anywhere}@media(max-width:700px){body{padding:14px}main{grid-template-columns:1fr}#list{max-height:230px}svg{height:300px}h1{font-size:24px}}
+</style>
+<h1>Prepared monitoring geometry</h1>
+<p>DRAFT_NOTICE</p><p id="status"></p>
+<main><section><input id="search" aria-label="Search candidates" placeholder="Search names or base type"><div id="list"></div></section>
+<section><h2 id="name"></h2><p id="summary"></p>
+<p>Blue: approved source footprint · yellow: apron · green: pier · cyan: water clipped to a monitoring zone</p>
+<svg id="map" viewBox="0 0 900 460" role="img" aria-label="Prepared source footprint and contained monitoring zones"></svg>
+<p>Geometry preview with polygon holes and continuous longitude. OpenStreetMap contributors · ODbL 1.0.</p>
+<h3>Source caveats</h3><ul id="notes"></ul><h3>Remaining evidence</h3><ul id="gaps"></ul><h3>Prepared zones</h3><ul id="zones"></ul>
+<h3>Deferred source features</h3><ul id="deferred"></ul>
+<p><a href="geometry-drafts.json">Drafts, exact source evidence and derivations</a> · <a href="prepared-geometry.geojson">Prepared geometry GeoJSON</a></p>
+<p>Source approval: <code id="approval"></code></p></section></main>
+<script>
+const report=DRAFT_DATA;
+const el=id=>document.getElementById(id);let selected=0;
+el('status').textContent=report.geometry_ready_sites+' of '+report.candidate_sites+' candidates have usable monitoring geometry · '+report.prepared_zones+' prepared zones · production acceptance pending';
+el('approval').textContent=report.source_review_id;
+const labels={sourced_status_and_claim_dates:'Supply sourced status and claim dates.',dated_unit_and_equipment_links:'Supply dated historical unit and equipment links.',compatible_monitoring_zone_geometry_or_role:'Supply monitoring geometry with a supported role.',unstaged_zone_or_mask_evidence:'Restore exact eligible source evidence.'};
+const reasons={missing_exact_staged_evidence:'missing exact staged evidence',unsupported_monitoring_role:'source tag does not establish a compatible monitoring role',monitoring_zone_crosses_footprint:'monitoring zone crosses the footprint; source geometry retained',no_positive_area_overlap_with_selected_zones:'no area overlap with any selected monitoring zone'};
+function list(){el('list').replaceChildren();const key=el('search').value.toLowerCase();report.candidates.forEach((c,i)=>{if(!(c.name+' '+c.site_type).toLowerCase().includes(key))return;const b=document.createElement('button');b.textContent=c.name;b.setAttribute('aria-current',i===selected?'true':'false');const sub=document.createElement('span');sub.textContent=c.zones.length+' prepared zones';b.append(sub);b.onclick=()=>{selected=i;list();show()};el('list').append(b)})}
+function item(parent,text){const li=document.createElement('li');li.textContent=text;el(parent).append(li)}
+function show(){const c=report.candidates[selected];el('name').textContent=c.name;el('summary').textContent=c.site_type+' · '+(c.geometry_ready?'geometry prepared':'geometry needs evidence')+' · '+c.zones.length+' contained zones';for(const id of ['notes','gaps','zones','deferred'])el(id).replaceChildren();for(const note of [...c.notes,...[c.source_attributes.note,c.source_attributes.fixme].filter(Boolean)])item('notes',note);for(const gap of c.missing)item('gaps',labels[gap]||gap);for(const z of c.zones)item('zones',z.source_record+' · '+z.zone.zone_type+' · unchanged source zone'+(z.mask_operations.length?' · '+z.mask_operations.length+' water intersections':''));for(const r of c.deferred_source_records)item('deferred',r.source_record+' · '+(reasons[r.reason]||r.reason));draw(c)}
+function draw(c){el('map').replaceChildren();const polygons=g=>g.type==='Polygon'?[g.coordinates]:g.coordinates;const anchor=polygons(c.geometry)[0][0][0][0];function unwrap(r){let last=anchor;return r.map(([x,y])=>{x+=360*Math.round((last-x)/360);last=x;return[x,y]})}const shapes=[{g:c.geometry,color:'#77c7ff',label:'approved source footprint'}];for(const z of c.zones){shapes.push({g:z.zone.geometry,color:z.zone.zone_type==='pier'?'#87d6aa':'#ffcf70',label:z.source_record});if(z.zone.water_mask)shapes.push({g:z.zone.water_mask,color:'#00d7e8',label:'derived water mask'})}const converted=shapes.map(s=>({...s,p:polygons(s.g).map(p=>p.map(unwrap))}));const pts=converted[0].p.flat(2),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);const cosine=Math.max(.05,Math.cos((ymin+ymax)/2*Math.PI/180)),scale=Math.min(830/Math.max(.00001,(xmax-xmin)*cosine),390/Math.max(.00001,ymax-ymin));const px=x=>450+(x-(xmin+xmax)/2)*cosine*scale,py=y=>230-(y-(ymin+ymax)/2)*scale;for(const s of converted){const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',s.p.flatMap(poly=>poly.map(r=>'M'+r.map(([x,y])=>px(x)+','+py(y)).join('L')+'Z')).join(' '));p.setAttribute('fill',s.color+'22');p.setAttribute('fill-rule','evenodd');p.setAttribute('stroke',s.color);p.setAttribute('stroke-width','1.5');const t=document.createElementNS('http://www.w3.org/2000/svg','title');t.textContent=s.label;p.append(t);el('map').append(p)}}
+el('search').oninput=list;list();show();
+</script></html>
