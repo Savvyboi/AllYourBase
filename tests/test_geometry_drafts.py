@@ -20,6 +20,7 @@ from allyourbase.sources.store import Store
 def candidate() -> dict[str, Any]:
     return {
         "id": "rus-synthetic",
+        "source_record": "way/1",
         "name": "Synthetic test",
         "site_type": "airbase",
         "geometry": polygon(0, 0, 2, 2),

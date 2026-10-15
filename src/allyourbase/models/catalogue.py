@@ -116,19 +116,24 @@ class SiteFeature(Contract):
 
     @model_validator(mode="after")
     def contained_zones(self) -> "SiteFeature":
-        anchor = anchor_of(self.geometry)
-        aoi = shape_on_anchor(self.geometry, anchor)
-        for zone in self.properties.zones:
-            zone_shape = shape_on_anchor(zone.geometry, anchor)
-            if not aoi.covers(zone_shape):
-                raise ValueError(f"zone {zone.id} extends beyond site AOI")
-            masks = [*zone.exclusion_masks]
-            if zone.water_mask is not None:
-                masks.append(zone.water_mask)
-            for mask in masks:
-                if not zone_shape.covers(shape_on_anchor(mask, anchor)):
-                    raise ValueError(f"mask extends beyond zone {zone.id}")
+        validate_zone_containment(self.geometry, self.properties.zones)
         return self
+
+
+def validate_zone_containment(geometry: Geometry, zones: list[Zone]) -> None:
+    """Check geometry alone, without filling absent status, dates or sensor choices."""
+    anchor = anchor_of(geometry)
+    aoi = shape_on_anchor(geometry, anchor)
+    for zone in zones:
+        zone_shape = shape_on_anchor(zone.geometry, anchor)
+        if not aoi.covers(zone_shape):
+            raise ValueError(f"zone {zone.id} extends beyond site AOI")
+        masks = [*zone.exclusion_masks]
+        if zone.water_mask is not None:
+            masks.append(zone.water_mask)
+        for mask in masks:
+            if not zone_shape.covers(shape_on_anchor(mask, anchor)):
+                raise ValueError(f"mask extends beyond zone {zone.id}")
 
 
 class SitesFile(Contract):

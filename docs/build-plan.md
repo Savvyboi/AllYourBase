@@ -23,8 +23,8 @@ current implementation status and the next work. The repository
 | Approved test scope | Chkalovskiy, Engels and Olenya; 4 km windows derived from pinned OurAirports records. Owner approved the locations and live checks on 2026-10-14, replacing the original three-country spike. |
 | Live evidence | 2026-W34 through W41; 96 site/provider/week rows across four catalogues contain acquisitions. Earth Search and CDSE optical each produced 21 verified band TIFFs; CDSE radar produced three validated four-band 10 m TIFFs. The Colab fallback also produced 24 successful site/week rows. |
 | Measured radar usage | Each successful 401 by 401 radar Process call reported 3.067035675 PU. Three successful chips used 9.201107025 PU plus 0.06 catalogue PU. The entire debug/test session used 21.469249725 Process PU plus 0.18 catalogue PU. |
-| Verification | 243 pytest/Hypothesis tests, Ruff, formatting, strict mypy, settings/catalogue/schema checks and all five pre-commit hooks pass. Generated radar JavaScript was executed against representative samples and metadata. |
-| Phase 2 workflow | Immutable snapshots, source-reuse enforcement, DuckDB staging, matching/geocoding proposals, permitted PDF page/rule extraction and a local catalogue review UI/CLI are implemented. 31 live OurAirports/Wikidata site records; unchanged snapshots produce zero new proposals. Multi-source review and separate evidence-readiness checks pass. The ten-candidate source packet has owner approval; 47 contained primary zones are prepared for six candidates. Four role gaps and dated evidence remain. Production catalogue remains empty. |
+| Verification | 254 pytest/Hypothesis tests, Ruff, formatting, strict mypy, settings/catalogue/schema checks and all five pre-commit hooks pass. Generated radar JavaScript was executed against representative samples and metadata. |
+| Phase 2 workflow | Immutable snapshots, source-reuse enforcement, DuckDB staging, matching/geocoding proposals, permitted PDF page/rule extraction and a local catalogue review UI/CLI are implemented. 31 live OurAirports/Wikidata site records; unchanged snapshots produce zero new proposals. Multi-source review and separate evidence-readiness checks pass. The ten-candidate source packet has owner approval; 47 contained primary zones are prepared for six candidates. Ten incomplete structured review drafts now retain exact evidence and field/gap worklists. Four role gaps and dated evidence remain. Production catalogue remains empty. |
 | Phase 3 prototypes | Radar request grids and antimeridian discovery splitting exist and have synthetic coverage. Shared preprocessing, persistent chip cache, masks, alignment and indicators are not implemented. |
 
 Detailed evidence: [implementation verification](phase-1-validation.md),
@@ -41,7 +41,8 @@ boundaries or a production monitoring catalogue.
 1. Phase 1 is merged. Preserve the existing access evidence.
 2. Review the [ten-site mixed source geometry packet](phase-2-mixed-pilot.md). The
    owner selected all base types across Russia. Resolve the flagged polygon/zone
-   gaps and source status, claim dates and unit/equipment links. At least ten
+   gaps and source status, claim dates and unit/equipment links, using the
+   [structured review drafts](phase-2-bundle-preparation.md). At least ten
    production sites must pass review and evidence readiness before closing Phase 2.
 3. Continue processing through Colab as selected by the owner. Its Phase 1 access
    notebook is exercised; full processing still needs a resumable results store,
@@ -230,7 +231,7 @@ remains gated on actual Phase 2 production acceptance.
 
 ## Phase 2 geometry preparation continuation (2026-10-15)
 
-PR #7 is merged at 364d8c4. [Monitoring geometry preparation](phase-2-geometry-preparation.md)
+PR #7 is merged at 364d8c4. Draft PR #8 remains open. [Monitoring geometry preparation](phase-2-geometry-preparation.md)
 now produces 47 contained primary zones for six owner-approved candidates. The
 five crossing source water polygons do not overlap those zones and are explicitly
 deferred; the original source geometry/approval is preserved. Four candidates
@@ -238,3 +239,16 @@ still need supported zone geometry/roles. Two short dated NTI historical notes
 are staged as pending reported evidence, with repeat ingestion creating zero
 proposals. All 243 tests and required checks pass. Windows redirected JSON output
 preserves Cyrillic names. Production catalogue remains empty and readiness false.
+
+
+## Phase 2 structured bundle preparation continuation (2026-10-15)
+
+Draft [PR #8](https://github.com/Savvyboi/AllYourBase/pull/8) now includes
+`catalogue prepare-bundles`. Ten incomplete drafts preserve the approved source
+packet and its 47 prepared zones, with exact evidence sidecars and field/evidence
+worklists. Missing status/dates/sensor choices stay absent; historical notes stay
+pending. Repeating output is identical and review edits cannot be overwritten.
+Generic containment checks share the production validator without dummy facts.
+The [bundle preparation record](phase-2-bundle-preparation.md) documents provenance
+verification, remaining historical-reference limitations and all 254 passing
+tests/required checks. Production catalogue remains empty and readiness false.

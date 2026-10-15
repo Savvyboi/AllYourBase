@@ -143,6 +143,14 @@ def register_catalogue_commands(app: typer.Typer) -> None:
 
         echo(prepare_geometry(project_from_context(ctx), packet, output))
 
+    @app.command("prepare-bundles")
+    @guarded
+    def prepare_bundles_command(ctx: typer.Context, packet: Path, output: Path) -> None:
+        """Prepare incomplete structured drafts and exact evidence tasks; no acceptance."""
+        from allyourbase.catalogue.bundle_drafts import prepare_bundles
+
+        echo(prepare_bundles(project_from_context(ctx), packet, output))
+
     @app.command("approve-packet")
     @guarded
     def approve_packet_command(

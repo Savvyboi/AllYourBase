@@ -14,7 +14,7 @@ from shapely.ops import unary_union
 from allyourbase.catalogue.approvals import approval_for_packet, review_id
 from allyourbase.catalogue.packet import build_packet
 from allyourbase.loading import InputError
-from allyourbase.models.catalogue import Zone
+from allyourbase.models.catalogue import Zone, validate_zone_containment
 from allyourbase.models.geometry import Geometry, anchor_of, shape_on_anchor
 from allyourbase.project import Project
 from allyourbase.sources.contracts import Snapshot
@@ -118,9 +118,11 @@ def draft_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
         for mask, _ in masks
         if mask["source_record"] not in used_masks
     )
+    validate_zone_containment(geometry, [Zone.model_validate(z["zone"]) for z in prepared])
     missing_evidence = any(r["reason"] == "missing_exact_staged_evidence" for r in deferred)
     return {
         "candidate_id": candidate["id"],
+        "source_record": candidate["source_record"],
         "name": candidate["name"],
         "site_type": candidate["site_type"],
         "notes": candidate.get("notes", []),
@@ -136,12 +138,18 @@ def draft_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def prepare_geometry(project: Project, packet_path: Path, output: Path) -> dict[str, Any]:
+def check_draft_output(project: Project, packet_path: Path, output: Path) -> Path:
     packet_path, output = packet_path.expanduser().resolve(), output.expanduser().resolve()
     if output.is_relative_to(project.root.resolve()):
         raise InputError("prepared geometry must stay outside the code repository")
     if output == packet_path.parent or output in packet_path.parents:
         raise InputError("prepared geometry must not overwrite the source packet")
+    return output
+
+
+def build_geometry_drafts(project: Project, packet_path: Path) -> dict[str, Any]:
+    """Reconstruct approved source evidence and validate geometry without writing drafts."""
+    packet_path = packet_path.expanduser().resolve()
     packet_bytes = packet_path.read_bytes()
     packet = json.loads(packet_bytes)
     with workflow_lock(project.workspace):
@@ -170,12 +178,14 @@ def prepare_geometry(project: Project, packet_path: Path, output: Path) -> dict[
             if review_id(fresh) != review_id(packet):
                 raise InputError("packet no longer matches retained source and eligible evidence")
         candidates = [draft_candidate(candidate) for candidate in fresh["candidates"]]
-        report = {
+        return {
             "schema_version": 1,
             "production_accepted": False,
             "source_review_id": review_id(packet),
             "source_packet_sha256": hashlib.sha256(packet_bytes).hexdigest(),
             "owner_approval": approval,
+            "country": fresh["selection"]["country"],
+            "sources": fresh["sources"],
             "candidate_sites": len(candidates),
             "geometry_ready_sites": sum(c["geometry_ready"] for c in candidates),
             "prepared_zones": sum(len(c["zones"]) for c in candidates),
@@ -184,52 +194,56 @@ def prepare_geometry(project: Project, packet_path: Path, output: Path) -> dict[
             "Source footprints and compatible zones are unchanged. Water masks are intersected "
             "with each selected zone; unrelated water and unsupported roles are deferred.",
         }
-        features = []
-        for candidate in candidates:
-            for entry in candidate["zones"]:
-                zone = entry["zone"]
-                for role, geometry in (
-                    (zone["zone_type"], zone["geometry"]),
-                    ("water_mask", zone["water_mask"]),
-                ):
-                    if geometry is not None:
-                        features.append(
-                            {
-                                "type": "Feature",
-                                "geometry": geometry,
-                                "properties": {
-                                    "candidate_id": candidate["candidate_id"],
-                                    "zone_id": zone["id"],
-                                    "role": role,
-                                    "production_accepted": False,
-                                },
-                            }
-                        )
-        output.mkdir(parents=True, exist_ok=True)
-        for name, content in (
-            ("geometry-drafts.json", report),
-            ("prepared-geometry.geojson", {"type": "FeatureCollection", "features": features}),
-        ):
-            (output / name).write_text(
-                json.dumps(content, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-            )
-        template = Path(__file__).with_name("geometry_drafts.html").read_text(encoding="utf-8")
-        encoded = (
-            json.dumps(report, ensure_ascii=False).replace("<", r"\u003c").replace("&", r"\u0026")
+
+
+def prepare_geometry(project: Project, packet_path: Path, output: Path) -> dict[str, Any]:
+    output = check_draft_output(project, packet_path, output)
+    report = build_geometry_drafts(project, packet_path)
+    candidates = report["candidates"]
+    features = []
+    for candidate in candidates:
+        for entry in candidate["zones"]:
+            zone = entry["zone"]
+            for role, geometry in (
+                (zone["zone_type"], zone["geometry"]),
+                ("water_mask", zone["water_mask"]),
+            ):
+                if geometry is not None:
+                    features.append(
+                        {
+                            "type": "Feature",
+                            "geometry": geometry,
+                            "properties": {
+                                "candidate_id": candidate["candidate_id"],
+                                "zone_id": zone["id"],
+                                "role": role,
+                                "production_accepted": False,
+                            },
+                        }
+                    )
+    output.mkdir(parents=True, exist_ok=True)
+    for name, content in (
+        ("geometry-drafts.json", report),
+        ("prepared-geometry.geojson", {"type": "FeatureCollection", "features": features}),
+    ):
+        (output / name).write_text(
+            json.dumps(content, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
-        (output / "preview.html").write_text(
-            template.replace("DRAFT_NOTICE", html.escape(report["notice"])).replace(
-                "DRAFT_DATA", encoded
-            ),
-            encoding="utf-8",
+    template = Path(__file__).with_name("geometry_drafts.html").read_text(encoding="utf-8")
+    encoded = json.dumps(report, ensure_ascii=False).replace("<", r"\u003c").replace("&", r"\u0026")
+    (output / "preview.html").write_text(
+        template.replace("DRAFT_NOTICE", html.escape(report["notice"])).replace(
+            "DRAFT_DATA", encoded
+        ),
+        encoding="utf-8",
+    )
+    return {
+        key: report[key]
+        for key in (
+            "candidate_sites",
+            "geometry_ready_sites",
+            "prepared_zones",
+            "production_accepted",
+            "source_review_id",
         )
-        return {
-            key: report[key]
-            for key in (
-                "candidate_sites",
-                "geometry_ready_sites",
-                "prepared_zones",
-                "production_accepted",
-                "source_review_id",
-            )
-        } | {"output": str(output)}
+    } | {"output": str(output)}

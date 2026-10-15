@@ -106,3 +106,16 @@ status dates and dated historical links, then assemble complete validated review
 bundles using these geometry components. Preserve the existing owner decision.
 Keep Phase 2 incomplete until ten production sites across the required types
 satisfy evidence readiness; Phase 3 remains gated on that acceptance.
+
+
+## Structured bundle continuation (2026-10-15)
+
+Draft [PR #8](https://github.com/Savvyboi/AllYourBase/pull/8) remains open and now
+prepares ten incomplete structured review bundles with exact source evidence and
+validation worklists. The existing owner approval and 47 contained zones are
+preserved; four zone gaps and factual evidence remain. The two pending historical
+notes pass retained-snapshot integrity checks, while their original references
+and modern footprint correspondence remain unverified. See
+[bundle preparation](phase-2-bundle-preparation.md) for reproduction, source
+limitations and 254 passing tests plus required checks. Production acceptance
+and milestone readiness remain incomplete.
