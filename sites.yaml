@@ -1,0 +1,7 @@
+# Centre from the retained OurAirports UUMU record; see docs/ground-change-mvp.md.
+sites:
+- id: chkalovsky
+  name: Chkalovsky
+  latitude: 55.8783
+  longitude: 38.061699
+  size_m: 1000

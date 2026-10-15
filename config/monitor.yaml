@@ -1,0 +1,49 @@
+schema_version: 1
+optical_threshold: 0.1
+radar_threshold_db: 3.0
+minimum_patch_cells: 9
+minimum_baseline_observations: 2
+minimum_common_coverage: 0.7
+cloud_buffer_cells: 1
+lee_window: 3
+max_requests: 100
+retry_attempts: 3
+optical_preview_max: 0.4
+radar_preview_db:
+- -25
+- 0
+provider:
+  kind: sentinelhub
+  sensor: s1
+  catalogue_url: https://sh.dataspace.copernicus.eu/api/v1/catalog/1.0.0
+  collection: sentinel-1-grd
+  enabled: true
+  process_url: https://sh.dataspace.copernicus.eu/api/v1/process
+  token_url: https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token
+  client_id_env: CDSE_CLIENT_ID
+  client_secret_env: CDSE_CLIENT_SECRET
+  band_assets: {}
+  native_spacing_by_mode:
+    IW: 10
+    SM: 10
+    EW: 25
+  s3_endpoint: null
+  s3_access_key_env: null
+  s3_secret_key_env: null
+http:
+  lookback_weeks: 8
+  http_timeout_seconds: 60.0
+  retry_base_seconds: 1.0
+  max_retry_delay_seconds: 60.0
+  stac_page_size: 100
+  stac_max_pages: 5
+  optical_max_scene_cloud_percent: 90.0
+  max_window_pixels: 6250000
+  max_process_response_bytes: 2000000
+  max_metadata_response_bytes: 5000000
+  max_process_dimension_px: 2500
+  radar_time_margin_seconds: 1
+  processing_units_header: x-processingunits-spent
+  radar_request_reservation_pu: 50.0
+  keyring_service: allyourbase-cdse
+  token_refresh_fraction: 0.9

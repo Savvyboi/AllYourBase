@@ -1,4 +1,6 @@
-"""AllYourBase: local analysis, curated facts, deliberate publication."""
+"""AllYourBase: coordinate-based Sentinel ground-change monitoring."""
 
 __version__ = "0.3.0"
-ALGO_VERSION = "0.0.0"  # No imagery algorithm has been implemented yet.
+ALGO_VERSION = (
+    "0.0.0"  # Legacy catalogue pipeline version; monitor has its own explicit analysis version.
+)

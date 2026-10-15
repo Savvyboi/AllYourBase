@@ -1,300 +1,124 @@
-# AllYourBase agent guide and build plan
+# AllYourBase agent guide
 
-Updated 2026-10-15 (Europe/Helsinki), after Phase 2 structured review bundle preparation.
-This file applies to the whole repository.
+Updated 2026-10-15 (Europe/Helsinki), after the owner replaced the project scope.
+This file applies to the whole repository. Current user instructions take precedence.
 
-## Purpose and authoritative records
+## Active goal
 
-Build a review-first Sentinel-1/Sentinel-2 pipeline with Google Colab processing,
-a human-curated, sourced catalogue and a later static Hugo/GitHub Pages website. Current user
-instructions take precedence over historical documents and this guide.
+Build the small coordinate-based Sentinel ground-change MVP specified in the
+[owner's replacement plan](docs/ground-change-agent-plan.md). The current roadmap
+and acceptance status are in [docs/build-plan.md](docs/build-plan.md). The earlier
+catalogue/Colab/Hugo plan is preserved in [the legacy roadmap](docs/legacy-build-plan.md)
+and [legacy guide](docs/legacy-agent-guide.md); its milestones no longer gate this MVP.
+Do not resume catalogue research or ask for old packet approval as a prerequisite.
 
-Read [the active build plan](docs/build-plan.md) for detailed acceptance criteria
-and [the Word plan snapshot](docs/build-plan.docx) for the full original design.
-The Word snapshot predates the successful Colab fallback check; the Markdown
-plan and this guide contain current acceptance status. The Windows Word renderer
-is unavailable, so do not claim that snapshot has been updated or re-rendered. Original design proposals are not completed
-features or authorization to deploy, publish, merge, scrape restricted sources,
-or change credentials. Verify actual repository state before acting.
+The MVP uses `sites.yaml`, one location initially, a fixed 1 km metric square and
+100 Ã— 100 cells at 10 m spacing. It compares every usable acquisition in the latest
+seven complete UTC days with the preceding 28 days. `--end-date` is an exclusive
+UTC date for historical runs. Start location: Chkalovsky, using the retained
+OurAirports UUMU centre. The owner authorized using any existing approved base
+on 2026-10-15. This square is a processing window, not a surveyed facility boundary.
 
-Use [Phase 1 setup](docs/phase-1.md),
-[live measurements](docs/phase-1-live-validation.md),
-[implementation verification](docs/phase-1-validation.md) and
-[ADR 0002](docs/adr/0002-provider-selection.md) for current provider evidence.
+Use CDSE Sentinel Hub Catalog and Process APIs, OAuth credentials, numerical TIFFs,
+one acquisition at a time and exact grid/scene verification. Optical uses B02,
+B03, B04, B08, SCL and dataMask. Radar uses IW VV/VH, terrain gamma-zero,
+orthorectification, Copernicus 30 m DEM, LEE 3Ã—3 and data/shadow masks. A 10 m
+grid does not imply 10 m resolving power. Preserve product identity, including
+COG suffixes. Unknown relative orbit means no radar comparison.
 
-## Current implementation
+Keep prototype thresholds in `config/monitor.yaml`: optical mean absolute band
+reflectance difference >0.10, radar absolute VV or VH difference >3 dB, at least
+nine eight-connected cells, at least two independent earlier baseline observations
+per evaluated pixel, and at least 70% valid common AOI coverage. Optical keeps only
+SCL 4/5 with a cloud/shadow buffer; categorical data uses nearest neighbour.
+Radar baseline medians are linear before dB conversion, grouped by relative
+orbit, direction, mode and polarisation. Alternative tile/reprocessed products
+from one pass must not inflate observation counts. Baselines exclude the target week.
 
-- Phase 0 is complete and merged in PR #1. The Python 3.12/uv foundation, strict
-  models, six JSON Schemas, catalogue checking, UTC ISO-week planning and CLI
-  command surface are implemented.
-- PR #2 is merged at f700c1a. Earth Search optical, CDSE
-  optical fallback and CDSE Sentinel Hub radar access pass for the approved pilot.
-- The Colab optical run 20261013T234356Z-1737c37ff296467c979cd05e9ab00b63
-  produced 21 verified CDSE band TIFFs and 24 successful site/week rows. Local
-  revalidation agrees with Colab, and its source manifest matches the delivered
-  bundle. Credential setup is complete in Colab; secret values were not imported.
-- The owner approved Chkalovskiy, Engels and Olenya as 4 km test windows on
-  2026-10-14 and explicitly authorized the live access checks. This replaced the
-  original three-country spike. Do not request that approval again for the same
-  scope; new/replacement areas still need review.
-- 2026-W34 through W41 produced 96 site/provider/week rows with acquisitions.
-  Optical reads produced 21 local band TIFFs; radar reads produced three
-  validated four-band, 401 by 401, 10 m TIFFs. Item counts are not aircraft counts,
-  clear-sky observations or unique satellite overpasses.
-- Successful radar Process calls each reported 3.067035675 PU. Charges for
-  failed/debug attempts were retained. These are measurements for these requests,
-  not an account-wide quota or a guaranteed future cost.
-- Phase 2 implementation is merged: [PR #3](https://github.com/Savvyboi/AllYourBase/pull/3)
-  at 2d8135f added source ingestion and review;
-  [PR #4](https://github.com/Savvyboi/AllYourBase/pull/4) at b97c9c6 added supporting
-  evidence and readiness checks; [PR #5](https://github.com/Savvyboi/AllYourBase/pull/5)
-  at 378ee08 added native Overpass geometry and the mixed-pilot review packet.
-  Immutable snapshots, permission-gated connectors/PDF extraction, DuckDB staging,
-  candidate matching and the loopback review app are implemented, including
-  validated, recoverable YAML/GeoJSON acceptance. See [Phase 2](docs/phase-2.md)
-  and [ADR 0003](docs/adr/0003-catalogue-ingestion.md).
-  Live OurAirports/Wikidata imports produced 31 site records; repeating retained
-  snapshots produces zero new proposals. All source records remain unapproved;
-  production catalogue acceptance is still open.
-- The owner confirmed the mix of all Russian military base types on 2026-10-14.
-  Native OSM discovery retained 18,568 tagged features (not a count of bases).
-  The first mixed review packet has ten source footprints: four airbases, three
-  naval facilities and three ground-garrison candidates. Its 77 zone/mask
-  associations include 72 contained polygons and five boundary conflicts.
-  See [mixed-pilot evidence](docs/phase-2-mixed-pilot.md) and the
-  [selection](docs/proposals/rus-mixed-pilot.yaml). This is the first review batch;
-  the broader scope is not an exhaustive completed inventory. All ten candidates
-  have owner approval of the displayed proposals; status/claim dates, supported
-  zone roles and dated historical unit/equipment evidence are still open. The
-  initial queue had 185 record proposals: 41 site records,
-  80 zone candidates and 64 masks, with three superseded versions retained.
-  Site records may duplicate physical facilities. Repeat finalized footprint and
-  zone imports produce zero new proposals. The owner approved all ten displayed
-  candidate identities/classifications and source geometry on 2026-10-15; the
-  dated source gaps and containment conflicts are separate validation work.
-- Phase 2 packet evidence continuation pins footprint and zone queue links to
-  exact verified snapshots, retains active accepted supporting records and flags
-  rejected/superseded/unlinked evidence. Packet format is now version 2, with a
-  per-candidate `review-gaps.json` and visible identity/zone links and review tasks.
-  The refreshed external packet is under `review/mixed-pilot-evidence-20261015/`;
-  all 77 associations have exact staged evidence. Five boundary conflicts across
-  two candidates and four compatible-zone gaps remain. Production decisions and
-  the original packet/snapshots are unchanged.
-- PR #6 is merged at 130c81a. The owner explicitly approved all displayed
-  proposals on 2026-10-15. The exact packet and its SHA-256 are archived under
-  `review/packet-approvals/151d4e72412905a9b3d6168f91695f7194068d3b667063f83a5ca9d83c8660dd/`.
-  `catalogue approve-packet` records this approval durably and idempotently;
-  regenerated matching packets clear owner-review tasks. Changed identities,
-  geometry, roles or source versions do not inherit the recorded approval.
-  Do not ask the owner to approve the unchanged displayed packet again.
-  Approval does not supply absent status/claim dates or historical evidence,
-  repair crossing polygons, or create production catalogue records.
-- A bounded live GeoNames cities5000 import retained 2,759 Russian populated
-  places, with zero new proposals on first/repeat staging. Its source spec is
-  `config/sources/geonames-rus-cities5000.yaml`; exact manifest/hash and validation
-  are outside Git under `review/geonames-cities5000-20261015/`. This is a partial
-  populated-place gazetteer, not an inventory of facilities or deployments.
-  Re-staging the same verified current snapshot now skips parsing and row writes;
-  retained payloads are still hashed and old snapshot heads can still be restored.
-- PR #7 is merged at 364d8c4. Draft PR #8 is open on
-  `codex/phase-2-geometry-preparation`. `catalogue prepare-geometry` reconstructs
-  owner-approved source packets against retained snapshots and eligible evidence,
-  and prepares contained primary-role zones without changing source geometry.
-  The external `review/mixed-pilot-geometry-20261015/` contains 47 zones for six
-  candidates and a preview at http://127.0.0.1:8770/preview.html. All five crossing
-  source features are water masks with no area overlap with any selected zone;
-  they are explicitly deferred, not boundary repairs or production masks. Four
-  candidates still lack supported primary zones. The original approval, source
-  packet and five source-boundary conflicts are preserved. See
-  [geometry preparation](docs/phase-2-geometry-preparation.md).
-- Two pending manually curated NTI historical records retain a reported
-  2000-10-18 Engels/division/Tu-160 association; original references and modern
-  footprint correspondence remain unverified. No current claim or production
-  decision is inferred. Repeat staging creates zero proposals. The queue now has
-  187 active record proposals and three retained superseded versions.
-- Draft PR #8 now also includes `catalogue prepare-bundles`: ten incomplete
-  source-pinned bundle drafts, exact evidence sidecars and field/evidence worklists
-  under external `review/mixed-pilot-bundles-20261015/`. Six candidates retain the
-  existing 47 zones; four zone gaps remain. Status, factual dates and sensor
-  choices are omitted, and historical notes are not automatically attached.
-  Repeat output is identical; regeneration refuses to overwrite review edits.
-  Generic containment checks need no invented metadata. See
-  [bundle preparation](docs/phase-2-bundle-preparation.md).
-- The two pending NTI notes match their retained snapshot and semantic hashes.
-  Bibliography inspection dates reference [19] to September 2000, before the
-  reported October announcement. Neither original reference was retrieved;
-  modern footprint correspondence remains unverified. Full checks are external
-  under `review/bundle-preparation-20261015/`. No new imports or decisions.
-- Last verified code checks: 254 pytest/Hypothesis tests, Ruff, format, strict
-  mypy, settings/catalogue/schema checks and all five pre-commit hooks pass.
-  Browser QA covered all ten previews, search, layers and queue links; desktop
-  and 375 px mobile checks found no JavaScript errors or horizontal overflow.
-- Production catalogue has zero sites, units, equipment and sources; readiness
-  remains false. No production proposal was accepted or rejected. The approved
-  Phase 1 access windows are separate from production geometry and contain no
-  established unit/equipment claims. No new Sentinel requests were made for the
-  mixed packet.
-- Package version is 0.3.0; algo_version is 0.0.0 because analysis is not implemented.
-  run/backfill execution, scoring, event review, Hugo and publishing remain reserved.
+Every detection is **possible ground change**. Do not infer cause, military
+activity, unit/equipment deployments, intent, people/vehicle counts or confidence
+percentages. Keep sensor areas separate. A quiet result describes only valid
+observed coverage; missing data is `insufficient_data`, and failures are `error`.
 
-## Immediate continuation
+## Implementation and evidence
 
-1. Preserve the merged Phase 1 and Phase 2 evidence. Do not repeat imagery
-   requests merely to verify documentation, or start Phase 3 as if catalogue
-   acceptance were complete.
-2. Continue review of the existing ten-candidate mixed batch in the external
-   sibling workspace `../phase2-data`. Its packet is under
-   `review/mixed-pilot/`: `review-packet.md`, `packet.json`, `preview.html` and
-   `source-polygons.geojson`. The national inventory CSV supports later expansion.
-   Use the refreshed packet under `review/mixed-pilot-evidence-20261015/`, including
-   its `review-gaps.json`. Its preview is http://127.0.0.1:8769/preview.html and the
-   review queue is http://127.0.0.1:8768; restart those services if needed. The preview
-   is read-only and now displays the owner's 2026-10-15 approval of the existing
-   candidate identities/classifications and source geometry. Preserve that decision;
-   source evidence and valid production contracts remain separate requirements.
-3. Owner review of the displayed batch is complete. Reuse the prepared geometry
-   under `review/mixed-pilot-geometry-20261015/`; six candidates have 47 usable
-   contained source zones. Resolve the four remaining zone-role gaps and source
-   evidence before production acceptance. The five crossing water polygons do
-   not overlap the prepared zones and are deferred, with source polygons intact.
-   Original source caveats remain:
-   Gromovo is an unnamed parcel near two Wikidata records; Gadzhiyevo has an
-   explicitly estimated outline. Olenya has three crossing zone/mask polygons
-   and Gadzhiyevo has two. Novorossiysk lacks a contained pier/anchorage candidate;
-   one ground parcel has no mapped zone, and parking tags do not establish
-   military vehicle use. Inspect location, source scope and duplicates, including
-   whether separately mapped parcels belong to one facility. Source points and
-   approved access-test squares are not production boundaries.
-4. Use the structured drafts under `review/mixed-pilot-bundles-20261015/` and
-   their per-candidate validation/evidence worklists. Copy files before editing;
-   regeneration protects edited output. Obtain permitted sources for status/claim
-   dates and dated historical unit/equipment evidence, choose processing sensors,
-   then complete and validate the structured review bundles. Reuse
-   existing owner approval for unchanged displayed content.
-   Ground-unit labels alone do not establish an association or current deployment.
-   Re-run `catalogue readiness --country RUS --minimum-sites 10 --require-type airbase --require-type naval_base --require-type garrison`
-   after production acceptance. Keep Phase 2 incomplete until ten or more
-   reviewed production sites, all required types, approved zones and retained
-   provenance with overlapping dated unit/equipment links satisfy acceptance.
-5. Google Colab is the selected processing runtime. The thin Phase 1 notebook has
-   been exercised successfully. Full processing still needs the resumable results
-   store, VM-local DB, checkpoint sync and shared one-writer lock. Keep secret
-   values in Colab Secrets, with notebook access enabled; never ask for values
-   in chat or print them. The S3 reader consumes environment variables and .env
-   is not loaded automatically.
+- PRs #1â€“#8 are merged. PR #8 merged at `9e0269b`; all previous source snapshots,
+  approval archives and provider evidence remain intact and are historical records.
+- Active implementation is under `src/allyourbase/monitor/`: configuration/grid,
+  fetch, prepare, detect, report and CLI modules. `allyourbase monitor run` supports
+  `--plan`, `--demo` or explicit `--live`; `monitor build` rebuilds retained history.
+  Legacy catalogue/access commands and their checks remain available.
+- Local historical Chkalovsky check: target 2026-10-05 through 2026-10-11 UTC,
+  exclusive end 2026-10-12; baseline 2026-09-07 through 2026-10-04. Both sensors
+  supplied usable observations. One radar candidate was generated; one optical
+  comparison was quiet at 99.76% common coverage, three were insufficient.
+  These are prototype outputs, not independently verified real-world events.
+- The corrected uncached run used 47 HTTP requests and reported 7.1607681139640045
+  total PU across catalogue/Process responses. A later run after product
+  deduplication used three catalogue/auth requests, zero Process calls, reported
+  0.04 PU and retained one detection. Earlier scene-selection diagnostics are
+  preserved; charges for the first rejected batch were not retained and remain
+  unknown. Do not present these figures as account-wide usage.
+- External workspaces: `../monitor-data` for cache/usage/QA, `../monitor-results`
+  for small JSON/PNG history, `../monitor-site` for generated static output.
+  Earlier `../phase1-data` and `../phase2-data` are preserved. All are outside Git.
+- 294 tests, Ruff, formatting, strict mypy and all legacy settings/catalogue/schema
+  checks pass. Headless Edge checks of desktop and 375 px mobile verify images,
+  filter buttons, detail links, provenance, no overflow and no JS/HTTP errors.
+  A flagged radar comparison and quiet optical comparison were visually inspected.
+- The requested known-change fixture passes; real historical cause/ground truth
+  and threshold calibration remain unverified. Do not mark thresholds accepted.
+- Weekly/manual Actions workflow is implemented in `.github/workflows/monitor.yml`:
+  persistent `monitor-results` branch, single-run concurrency, explicit permissions,
+  official Pages artifact/deployment actions and bounded deployment retries.
+  Repository Actions secrets and workflow-based Pages are configured.
+  Manual Pages publication and the following unattended scheduled run still need
+  live verification. Do not mark the MVP complete until those acceptance checks pass.
 
-Earth Search is the measured optical primary; CDSE Sentinel Hub is the measured
-radar primary. CDSE optical fallback pixels are verified for these three areas. Planetary Computer
-RTC metadata coverage was observed in this pilot, but pixel retrieval/signing
-is unimplemented and its pipeline fallback stays disabled. GDAL HTTP transfer
-bytes and range-request counts remain unknown.
+## Working rules
 
-## Build plan and acceptance sequence
+Preserve old evidence, approval records, source decisions and unrelated edits.
+The legacy ten-site catalogue gate, dated unit/equipment requirements, Colab runtime,
+Hugo frontend and human-reviewed publication policy are superseded for this MVP.
+The owner now requests automatic possible-change publication through Actions/Pages.
+Keep code changes reviewable through draft PRs to Savvyboi/AllYourBase; do not merge
+PRs without authorization. Prepare deployment completely before any approval step.
 
-Implement milestones in order and use a separate reviewable PR per phase.
-Phases 0–1 and Phase 2 implementation PRs #3–#5 are merged. Phase 2 production
-acceptance remains open.
+Keep raw rasters, source payloads, credentials, local environments, diagnostics and
+full usage logs outside Git and published output. Only small report JSON/PNG history
+belongs on the dedicated results branch. Main holds code/config/docs/tests.
+Publish only the static builder's allow-listed output; never upload the workspace.
+Use environment variable names `CDSE_CLIENT_ID` and `CDSE_CLIENT_SECRET`, stored as
+Actions secrets. Reuse existing secure credentials; never request or print values.
+Tokens remain in memory. Increment `monitor.ANALYSIS_VERSION` for output-affecting
+algorithm changes, and preserve reports from earlier versions. Do not include raw response bodies or signed URLs in logs.
 
-| Phase | Current status | Next work and acceptance |
-| --- | --- | --- |
-| 0 Foundation | Complete, merged | Preserve strict contracts, schema generation, catalogue integrity and planning without side effects. Required CLI commands and checks already pass. |
-| 1 Data access | Complete, merged in PR #2 | Eight-week provider tables, Earth Search/CDSE optical windows, valid radar chips, measured radar usage and provider choice are verified. Preserve measured evidence. |
-| 2 Catalogue and ingestion | Workflow and owner approval merged; geometry and incomplete bundle drafts prepared; zero production sites | Complete four primary-zone gaps and sourced status/historical links, then assemble validated review bundles. Acceptance: 10+ reviewed Russian production sites across airbase, naval_base and garrison, with sourced dated links, idempotent ingestion and correct approved zone preview; milestone readiness must pass. |
-| 3 Preprocessing and indicators | Radar grid/discovery prototypes only | Finish global grids, resampling, persistent cache, masks, alignment and all configured indicators. Acceptance: synthetic/golden correctness and measured run timing under five minutes cold, one minute cached. Targets are not achieved claims. |
-| 4 Backfill and baselines | Not implemented | Resumable processing from 2024-W01, catch-up, late scenes, seasonal baselines and warm-up. Acceptance: 52+ weeks per pilot site plus data-gap report. Planning is not processing. |
-| 5 Scoring events images review | Not implemented | Explainable levels/direction/confidence/drivers, merging, image pairs and durable local review decisions. Acceptance: event images <=40 KB and decisions survive restart. |
-| 6 Website | Not implemented | Hugo pages/taxonomies, facet index, Pagefind, maps/charts and schema/link/browser checks. Acceptance: 100-site build under two minutes, 375 px usability, no console errors/broken links. |
-| 7 Publish and operations | Not implemented; spike ledger prototype exists | Reviewed export, separate site repo, scoped credentials, allow-list and size/schema/link checks, scheduler, locks, catch-up, notifications, backup and full usage accounting. Acceptance: two unattended scheduled weeks and publishing after review. |
-| 7a Colab | Selected runtime; Phase 1 access notebook exercised | Full processing still needs VM-local DB, checkpoint/atomic sync and one-writer lock. Acceptance: clean resume after interruption and no overlapping writers. |
-| 8 Another country | Deferred beyond Russian pilot | Add a country/climate through sourced catalogue/config records. Acceptance: no country-specific algorithm code changes and global edge-case tests pass. |
-| 9 Validation and tuning | Not implemented | Sourced event backtests, threshold tuning and methods. Acceptance: documented confirmation rates, false events per site-year and no-data fractions; version and retain old results. |
-| 10 Machine learning | Optional, not implemented | Isolation Forest second opinion; supervised work only after sufficient reviewed labels and a validated rule-based pipeline. |
+Transport retries catalogue/transient reads with backoff and counts every attempt
+against the configured cap. Process calls retry explicit 429 rejections only;
+ambiguous charged failures are not blindly repeated. Retain measured and unknown
+costs separately. Inspect source IDs and grid metadata before using cutouts.
 
-Keep catalogue proposals/decisions and raw sources in the external workspace. Local
-workflow locking and recoverable acceptance are implemented; shared Colab/Drive
-checkpointing and locks remain Phase 7a work. Native Overpass OSM import, geometry
-preview and the bounded live GeoNames cities5000 import pass. Native osmium and
-live Geofabrik/full-country gazetteer imports remain unverified. The basic
-transliteration is not full BGN/PCGN.
-
-Phase 2 includes site/unit/equipment/source/taxonomy provenance, dated garrison
-and equipment links, reusable source classification and human-approved zones.
-Phase 3 includes radar bright-target, ship-occupancy and backscatter-change
-indicators plus optical blob, disturbance, snow, burn and persistent-change
-indicators. All thresholds remain configurable.
-
-Owner decisions still needed before publication: final production sites/zones and
-exclusions, publication delay, final publish policy and destination repository/
-account. The three approved access windows do not decide these later questions.
-
-## Architecture and data boundaries
-
-- Keep code and curated catalogue in this repository. Keep bulky data, raw imagery,
-  local databases, source snapshots and full runtime reports outside Git. Colab
-  working state stays on the VM; Drive receives completed evidence archives. Publish
-  only reviewed, validated outputs to the eventual separate site repository.
-- Use allyourbase as package/CLI; basewatch remains a compatibility alias.
-  ALLYOURBASE_HOME overrides BASEWATCH_HOME and the configured external workspace.
-- Resolve all workspace paths through Project. Never allow a data workspace inside
-  the code repository. This development session uses sibling phase1-data for
-  provider evidence and phase2-data for snapshots, the staging DB and review
-  packets; do not hard-code a developer's absolute path into package code.
-- Keep country/site names, coordinates, unit/equipment facts and thresholds out of
-  algorithms. Use sourced catalogue/configuration data; never invent facts from memory.
-- No named individuals or personal data in the catalogue. Keep citations, reuse
-  classes, dates, confidence and immutable source manifests. Respect import,
-  reference and manual source limits; excluded/leaked sources remain excluded.
-- Preserve algo_version, provider, scene IDs and processed_at in outputs.
-  Missing data/provider failures are gaps, not normal or elevated activity.
-- Sentinel resolution supports aggregate change; it does not establish equipment
-  identity, reliable small-target counts, current unit deployments or intent.
-- Publication defaults to reviewed_only. delay_days: 0 is provisional and publish
-  is inactive. Do not activate publication based on a default value.
-- Record design decisions as ADRs and update progress/acceptance records when
-  implemented behavior or the owner-approved scope changes.
-
-## Provider implementation notes
-
-Use ProviderClient's discovery/window-read contract. Keep endpoints, collections,
-band aliases, request bounds and tuning in config/settings.yaml.
-
-Acquisitions are immutable. Discovery handles half-open UTC windows, pagination,
-deduplication and antimeridian query splitting. Optical access currently preserves
-native grids; shared preprocessing and harmonized caching belong to Phase 3.
-
-Radar requests use GAMMA0_TERRAIN, orthorectification, COPERNICUS_30, linear
-backscatter and both polarisation bands plus masks. Requesting 10 m output does
-not turn EW's 25 m source spacing into 10 m source data. Validate provenance,
-CRS/transform/dimensions, FLOAT32 bands, finite pixels and binary masks.
-Normalize only a terminal .SAFE suffix on both product IDs; retain checksum and
-_COG identity. Never accept a genuinely different scene.
-
-Use bounded retries for catalogue reads and redacted diagnostics. Do not blindly
-retry charged Process POSTs after ambiguous failures. The atomic/locked JSON
-radar budget ledger is a Phase 1 prototype; the future results store is DuckDB.
-Actual costs replace reservations; unknown charges remain reserved. No secret
-values, bearer tokens, signed URL parameters or raw sensitive response bodies
-belong in logs, docs or commits.
+Do not add object recognition, a coordinate-entry form, a database, a complex
+frontend or country-specific algorithm code. Resolve routine implementation choices
+autonomously. Keep the roadmap and ADRs current when behavior or scope changes.
 
 ## Development and verification
 
-Install the locked environment with uv sync --locked --extra access --extra ingestion --extra review.
-For implementation changes, run:
-
 ```sh
-uv run --extra access --extra ingestion --extra review python scripts/check.py
-uv run --extra access --extra ingestion --extra review pre-commit run --all-files
+uv sync --locked --extra access --extra ingestion --extra review --extra monitor
+uv run --extra access --extra ingestion --extra review --extra monitor python scripts/check.py
+uv run --extra access --extra ingestion --extra review --extra monitor pre-commit run --all-files
 ```
 
-The first command is the Windows equivalent of make check. Regenerate schemas
-with uv run allyourbase schemas generate when models change. Use synthetic pixels
-and non-secret metadata for offline tests; live requests must serve an explicitly
-configured check and retain measured costs.
+On this Windows host, default sandbox process startup may fail with
+`setup refresh had errors`; bounded reviewed PowerShell commands work. The legacy
+review service holds `.venv/Scripts/allyourbase.exe` open, so the current MVP checks
+use `UV_PROJECT_ENVIRONMENT` pointing at the external sibling `../monitor-env`.
+Do not stop unrelated services or mistake infrastructure errors for missing secrets.
 
-For documentation-only changes, check consistency, links and git diff --check.
-Do not rerun imagery requests merely to verify documentation. Render and visually
-inspect Word artifacts after edits. Keep their QA PDFs/PNGs outside the repository.
-
+For source edits, run appropriate offline tests and required checks. Use numerical
+fixtures and mocked non-secret API responses. Live imagery checks must serve actual
+MVP validation, remain bounded and retain costs. Do not repeat paid Process calls
+just to verify documentation; reuse verified cache and earlier reports.
 Before committing, inspect the diff and staged paths for credentials, imagery and
-workspace files. Never overwrite unrelated user changes. Preserve prior evidence
-and reports; keep incomplete milestones visibly incomplete.
+workspace files. Keep remaining validation gaps explicit.

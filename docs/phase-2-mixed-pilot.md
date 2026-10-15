@@ -1,5 +1,9 @@
 # Phase 2 mixed Russian pilot source geometry
 
+> Historical catalogue work. The 2026-10-15 scope change supersedes its
+> acceptance gates; see the [active ground-change plan](build-plan.md).
+
+
 Updated 2026-10-15 (Europe/Helsinki).
 
 The owner selected the mix of all military base types across Russia. This

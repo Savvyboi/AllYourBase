@@ -1,4 +1,4 @@
-"""Planning, provider access and sourced catalogue review commands."""
+"""Ground-change monitoring and retained provider/catalogue tools."""
 
 import json
 from dataclasses import dataclass
@@ -11,6 +11,8 @@ import typer
 from allyourbase import ALGO_VERSION, __version__
 from allyourbase.catalogue.validation import Catalogue, check_catalogue
 from allyourbase.loading import InputError
+from allyourbase.monitor import ANALYSIS_VERSION
+from allyourbase.monitor.commands import monitor_app
 from allyourbase.project import Project
 from allyourbase.providers.commands import providers_app
 from allyourbase.schemas import generate_schemas, stale_schemas
@@ -21,7 +23,7 @@ app = typer.Typer(
     no_args_is_help=True,
     invoke_without_command=True,
     pretty_exceptions_show_locals=False,
-    help="AllYourBase · Sentinel access and catalogue review",
+    help="AllYourBase Â· Sentinel access and catalogue review",
 )
 catalogue_app = typer.Typer(
     no_args_is_help=True, help="Check and review human-curated catalogue records."
@@ -30,6 +32,7 @@ config_app = typer.Typer(
     no_args_is_help=True, help="Validate settings without accessing providers."
 )
 schemas_app = typer.Typer(no_args_is_help=True, help="Generate or check catalogue JSON Schemas.")
+app.add_typer(monitor_app, name="monitor")
 app.add_typer(catalogue_app, name="catalogue")
 app.add_typer(config_app, name="config")
 app.add_typer(schemas_app, name="schemas")
@@ -54,7 +57,9 @@ def main(
     version: Annotated[bool, typer.Option("--version", is_eager=True)] = False,
 ) -> None:
     if version:
-        typer.echo(f"AllYourBase {__version__} · algo_version {ALGO_VERSION} (not implemented)")
+        typer.echo(
+            f"AllYourBase {__version__} Â· monitor {ANALYSIS_VERSION} Â· legacy algo {ALGO_VERSION}"
+        )
         raise typer.Exit()
     ctx.obj = Options(root, settings)
 
@@ -198,7 +203,7 @@ def run(
 ) -> None:
     """Weekly analysis is reserved; use --plan to inspect the work."""
     if not plan:
-        _unimplemented("Weekly imagery analysis", "Phases 3–5")
+        _unimplemented("Weekly imagery analysis", "Phases 3â€“5")
     _work_plan(_project(ctx), site, [_week(week) if week else _last_completed_week()])
 
 
@@ -242,7 +247,9 @@ def publish() -> None:
 @app.command()
 def status() -> None:
     """Show implementation status; no configuration or credentials are read."""
-    typer.echo("Phases 0–1 foundation/access and Phase 2 source ingestion/catalogue review.")
+    typer.echo("Coordinate-based Sentinel ground-change MVP: use monitor run --plan/--demo/--live.")
+    typer.echo("Local numerical analysis, retained reports and static-site build are implemented.")
     typer.echo(
-        "Weekly analysis, scoring, event review, website and publishing are not implemented."
+        "Actions/Pages deployment and unattended acceptance require live workflow validation."
     )
+    typer.echo("Legacy catalogue/access commands and evidence remain available.")
