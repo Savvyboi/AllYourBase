@@ -1,6 +1,7 @@
 """Explicit snapshot, staging and matching commands for the catalogue workflow."""
 
 import json
+import sys
 from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
@@ -49,7 +50,16 @@ def match_settings(project: Project) -> MatchSettings:
 
 
 def echo(value: object) -> None:
-    typer.echo(json.dumps(value, ensure_ascii=False, indent=2, default=str))
+    output = json.dumps(value, ensure_ascii=False, indent=2, default=str)
+    encoding = getattr(sys.stdout, "encoding", None)
+    if encoding:
+        try:
+            output.encode(encoding)
+        except UnicodeEncodeError:
+            # Redirected Windows streams can use a legacy encoding. JSON escapes
+            # preserve the source names without misreporting valid data as corrupt.
+            output = json.dumps(value, ensure_ascii=True, indent=2, default=str)
+    typer.echo(output)
 
 
 @sources_app.command("snapshot")
@@ -124,6 +134,14 @@ def register_catalogue_commands(app: typer.Typer) -> None:
                 project_from_context(ctx), selection, footprints, zones, output, review_url
             )
         )
+
+    @app.command("prepare-geometry")
+    @guarded
+    def prepare_geometry_command(ctx: typer.Context, packet: Path, output: Path) -> None:
+        """Prepare contained monitoring zones from approved source geometry; no acceptance."""
+        from allyourbase.catalogue.geometry_drafts import prepare_geometry
+
+        echo(prepare_geometry(project_from_context(ctx), packet, output))
 
     @app.command("approve-packet")
     @guarded

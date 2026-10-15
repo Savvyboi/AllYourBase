@@ -285,3 +285,15 @@ All 233 tests and required checks pass, including approval persistence,
 idempotence, changed content, archive/source tampering, CLI recording, repeat
 import integrity, older-head restoration and existing-database migration.
 Native osmium and live Geofabrik/full-country gazetteer imports remain unverified.
+
+
+## Monitoring geometry preparation continuation (2026-10-15)
+
+PR #7 is merged. The [geometry preparation record](phase-2-geometry-preparation.md)
+documents 47 usable contained source zones across six candidates, transparent
+zone-level water-mask handling, four remaining primary-zone gaps and two pending
+historical evidence notes. The five crossing source water polygons are deferred
+because they do not overlap selected monitoring zones; the source packet and its
+approval remain intact. All 243 tests, required checks and desktop/mobile preview
+checks pass. No production records or source decisions were accepted; milestone
+readiness remains false.

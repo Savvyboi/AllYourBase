@@ -1,6 +1,6 @@
 # AllYourBase agent guide and build plan
 
-Updated 2026-10-15 (Europe/Helsinki), after owner approval of the displayed Phase 2 packet.
+Updated 2026-10-15 (Europe/Helsinki), after Phase 2 monitoring geometry preparation.
 This file applies to the whole repository.
 
 ## Purpose and authoritative records
@@ -96,7 +96,22 @@ Use [Phase 1 setup](docs/phase-1.md),
   populated-place gazetteer, not an inventory of facilities or deployments.
   Re-staging the same verified current snapshot now skips parsing and row writes;
   retained payloads are still hashed and old snapshot heads can still be restored.
-- Last verified code checks: 233 pytest/Hypothesis tests, Ruff, format, strict
+- PR #7 is merged at 364d8c4. `catalogue prepare-geometry` now reconstructs
+  owner-approved source packets against retained snapshots and eligible evidence,
+  and prepares contained primary-role zones without changing source geometry.
+  The external `review/mixed-pilot-geometry-20261015/` contains 47 zones for six
+  candidates and a preview at http://127.0.0.1:8770/preview.html. All five crossing
+  source features are water masks with no area overlap with any selected zone;
+  they are explicitly deferred, not boundary repairs or production masks. Four
+  candidates still lack supported primary zones. The original approval, source
+  packet and five source-boundary conflicts are preserved. See
+  [geometry preparation](docs/phase-2-geometry-preparation.md).
+- Two pending manually curated NTI historical records retain a reported
+  2000-10-18 Engels/division/Tu-160 association; original references and modern
+  footprint correspondence remain unverified. No current claim or production
+  decision is inferred. Repeat staging creates zero proposals. The queue now has
+  187 active record proposals and three retained superseded versions.
+- Last verified code checks: 243 pytest/Hypothesis tests, Ruff, format, strict
   mypy, settings/catalogue/schema checks and all five pre-commit hooks pass.
   Browser QA covered all ten previews, search, layers and queue links; desktop
   and 375 px mobile checks found no JavaScript errors or horizontal overflow.
@@ -123,8 +138,12 @@ Use [Phase 1 setup](docs/phase-1.md),
    is read-only and now displays the owner's 2026-10-15 approval of the existing
    candidate identities/classifications and source geometry. Preserve that decision;
    source evidence and valid production contracts remain separate requirements.
-3. Owner review of the displayed batch is complete. Resolve its remaining source
-   and geometry validation gaps before production acceptance:
+3. Owner review of the displayed batch is complete. Reuse the prepared geometry
+   under `review/mixed-pilot-geometry-20261015/`; six candidates have 47 usable
+   contained source zones. Resolve the four remaining zone-role gaps and source
+   evidence before production acceptance. The five crossing water polygons do
+   not overlap the prepared zones and are deferred, with source polygons intact.
+   Original source caveats remain:
    Gromovo is an unnamed parcel near two Wikidata records; Gadzhiyevo has an
    explicitly estimated outline. Olenya has three crossing zone/mask polygons
    and Gadzhiyevo has two. Novorossiysk lacks a contained pier/anchorage candidate;
@@ -163,7 +182,7 @@ acceptance remains open.
 | --- | --- | --- |
 | 0 Foundation | Complete, merged | Preserve strict contracts, schema generation, catalogue integrity and planning without side effects. Required CLI commands and checks already pass. |
 | 1 Data access | Complete, merged in PR #2 | Eight-week provider tables, Earth Search/CDSE optical windows, valid radar chips, measured radar usage and provider choice are verified. Preserve measured evidence. |
-| 2 Catalogue and ingestion | Workflow and ten-candidate mixed packet merged; zero approved production sites | Review the existing mixed batch, resolve identity/boundary/zone-role gaps and collect dated unit/equipment evidence. Acceptance: 10+ reviewed Russian production sites across airbase, naval_base and garrison, with sourced dated links, idempotent ingestion and correct approved zone preview; milestone readiness must pass. |
+| 2 Catalogue and ingestion | Workflow and owner approval merged; geometry prepared for six candidates; zero production sites | Complete four primary-zone gaps and sourced status/historical links, then assemble validated review bundles. Acceptance: 10+ reviewed Russian production sites across airbase, naval_base and garrison, with sourced dated links, idempotent ingestion and correct approved zone preview; milestone readiness must pass. |
 | 3 Preprocessing and indicators | Radar grid/discovery prototypes only | Finish global grids, resampling, persistent cache, masks, alignment and all configured indicators. Acceptance: synthetic/golden correctness and measured run timing under five minutes cold, one minute cached. Targets are not achieved claims. |
 | 4 Backfill and baselines | Not implemented | Resumable processing from 2024-W01, catch-up, late scenes, seasonal baselines and warm-up. Acceptance: 52+ weeks per pilot site plus data-gap report. Planning is not processing. |
 | 5 Scoring events images review | Not implemented | Explainable levels/direction/confidence/drivers, merging, image pairs and durable local review decisions. Acceptance: event images <=40 KB and decisions survive restart. |
