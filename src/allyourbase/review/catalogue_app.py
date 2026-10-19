@@ -1,14 +1,10 @@
 """Loopback-only catalogue review with session-token protected API access."""
 
-import secrets
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
-from pydantic import ValidationError
-from starlette.middleware.base import RequestResponseEndpoint
-from starlette.responses import Response
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 
 from allyourbase.catalogue.review import ReviewBundle, accept
 from allyourbase.loading import InputError
@@ -17,43 +13,12 @@ from allyourbase.sources.store import Store
 
 
 def create_app(project: Project) -> FastAPI:
-    app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
-    token = secrets.token_urlsafe(32)
+    from allyourbase.review.local import create_local_app
+    from allyourbase.review.monitor_app import register_monitor_routes
+
+    app, token = create_local_app("invalid catalogue bundle")
     store = Store(project.workspace)
-
-    @app.middleware("http")
-    async def local_only(request: Request, call_next: RequestResponseEndpoint) -> Response:
-        host = request.headers.get("host", "").split(":")[0]
-        if host not in {"127.0.0.1", "localhost"}:
-            return JSONResponse({"error": "loopback host required"}, status_code=403)
-        if request.url.path.startswith("/api/"):
-            if not secrets.compare_digest(request.headers.get("x-review-token", ""), token):
-                return JSONResponse({"error": "review session token required"}, status_code=403)
-            origin = request.headers.get("origin")
-            if origin and origin != str(request.base_url).rstrip("/"):
-                return JSONResponse({"error": "same-origin request required"}, status_code=403)
-        result = await call_next(request)
-        result.headers["Cache-Control"] = "no-store"
-        result.headers["X-Content-Type-Options"] = "nosniff"
-        result.headers["Content-Security-Policy"] = (
-            "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
-            "frame-ancestors 'none'; base-uri 'none'"
-        )
-        return result
-
-    @app.exception_handler(InputError)
-    async def input_error(request: Request, exc: InputError) -> JSONResponse:
-        return JSONResponse({"error": str(exc)}, status_code=400)
-
-    @app.exception_handler(ValidationError)
-    async def validation_error(request: Request, exc: ValidationError) -> JSONResponse:
-        return JSONResponse(
-            {
-                "error": "invalid catalogue bundle",
-                "fields": [list(e["loc"]) for e in exc.errors(include_input=False)],
-            },
-            status_code=400,
-        )
+    register_monitor_routes(app, project.root / "sites.yaml", token)
 
     @app.get("/", response_class=HTMLResponse)
     def home() -> str:

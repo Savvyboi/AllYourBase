@@ -2,6 +2,7 @@
 
 from datetime import date
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
@@ -88,7 +89,9 @@ def run_command(
 
 @monitor_app.command("build")
 @guarded
-def build_command(ctx: typer.Context, history: Path, output: Path) -> None:
+def build_command(
+    ctx: typer.Context, history: Path, output: Path, sites: Path = Path("sites.yaml")
+) -> None:
     """Build the complete static site from retained small JSON/PNG history."""
     from allyourbase.cli import _options
     from allyourbase.monitor.report import build_site
@@ -98,4 +101,68 @@ def build_command(ctx: typer.Context, history: Path, output: Path) -> None:
     output = (output if output.is_absolute() else root / output).expanduser().resolve()
     if output.is_relative_to(root):
         raise InputError("generated site must stay outside the code repository")
-    echo(build_site(history, output))
+    locations = load_model((sites if sites.is_absolute() else root / sites).resolve(), Locations)
+    echo(build_site(history, output, locations))
+
+
+def _sites_path(ctx: typer.Context, sites: Path) -> Path:
+    from allyourbase.cli import _options
+
+    root = _options(ctx).root.expanduser().resolve()
+    return (sites if sites.is_absolute() else root / sites).expanduser().resolve()
+
+
+@monitor_app.command("sites")
+@guarded
+def list_sites(
+    ctx: typer.Context, sites: Path = Path("sites.yaml"), category: str | None = None
+) -> None:
+    """List monitor sites grouped by category; optionally select one category."""
+    from allyourbase.monitor.sites import SiteStore
+
+    snapshot = SiteStore(_sites_path(ctx, sites)).snapshot()
+    selected = [s for s in snapshot["sites"] if category is None or s["category"] == category]
+    echo(
+        {
+            "categories": {
+                label: [s for s in selected if s["category"] == label]
+                for label in snapshot["categories"]
+                if any(s["category"] == label for s in selected)
+            }
+        }
+    )
+
+
+@monitor_app.command("categorize")
+@guarded
+def categorize_sites(
+    ctx: typer.Context,
+    identifiers: Annotated[list[str], typer.Argument()],
+    category: Annotated[
+        str, typer.Option(help="Existing or new category; blank means Uncategorized.")
+    ],
+    sites: Path = Path("sites.yaml"),
+) -> None:
+    """Assign a category to existing site IDs without changing their grids."""
+    from allyourbase.monitor.sites import SiteStore
+
+    store = SiteStore(_sites_path(ctx, sites))
+    echo(store.categorize(dict.fromkeys(identifiers, category), store.snapshot()["revision"]))
+
+
+@monitor_app.command("review")
+@guarded
+def review_sites(
+    ctx: typer.Context,
+    sites: Path = Path("sites.yaml"),
+    port: Annotated[int, typer.Option(min=1024, max=65535)] = 8766,
+) -> None:
+    """Open the local monitor site/category editor."""
+    import uvicorn
+
+    from allyourbase.review.monitor_app import create_app
+
+    path = _sites_path(ctx, sites)
+    load_model(path, Locations)
+    typer.echo(f"Monitor sites: http://127.0.0.1:{port}")
+    uvicorn.run(create_app(path), host="127.0.0.1", port=port, log_level="warning")

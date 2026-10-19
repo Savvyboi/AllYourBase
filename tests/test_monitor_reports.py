@@ -22,26 +22,26 @@ def location(identifier: str = "synthetic-change") -> Location:
     )
 
 
-def test_complete_report_history_is_idempotent_and_keeps_separate_sensor_areas(
+def test_optical_report_history_is_idempotent(
     tmp_path: Path, monitor_config: MonitorConfig
 ) -> None:
     history = tmp_path / "history"
     source = SyntheticImagery(date(2020, 10, 12), True)
     first = check_location(location(), monitor_config, source, history, date(2020, 10, 12))
-    assert first["status"] == "possible_change" and first["usable_sensors"] == ["s1", "s2"]
+    assert first["status"] == "possible_change" and first["usable_sensors"] == ["s2"]
     reports = list((history / "detections").glob("*.json"))
-    assert len(reports) == 2
+    assert len(reports) == 1
     for path in reports:
         report = json.loads(path.read_text(encoding="utf-8"))
         assert report["changed_area_m2"] == 50000
-        assert set(report["supported_by_sensors"]) == {"s1", "s2"}
+        assert set(report["supported_by_sensors"]) == {"s2"}
         assert report["baseline_preview"].startswith("pixelwise median composite")
         assert "assets" not in report["current"] and report["patches"]
     again = check_location(location(), monitor_config, source, history, date(2020, 10, 12))
     assert again["detection_ids"] == first["detection_ids"]
-    assert len(list((history / "detections").glob("*.json"))) == 2
+    assert len(list((history / "detections").glob("*.json"))) == 1
     output = tmp_path / "site"
-    assert build_site(history, output) == {"locations": 1, "detections": 2}
+    assert build_site(history, output) == {"locations": 1, "detections": 1}
     html = (output / "index.html").read_text(encoding="utf-8")
     assert "<script>alert(1)</script>" not in html
     assert "&lt;script&gt;" in html and "median composite" in html
@@ -71,7 +71,7 @@ def test_failed_sensor_preserves_prior_detections_and_error_status(
         location(), monitor_config, Failed(date(2020, 10, 19), True), history, date(2020, 10, 19)
     )
     assert check["status"] == "error" and not check["detection_ids"]
-    assert len(list((history / "detections").glob("*.json"))) == 2
+    assert len(list((history / "detections").glob("*.json"))) == 1
     output = tmp_path / "site"
     build_site(history, output)
     html = (output / "locations/synthetic-change.html").read_text(encoding="utf-8")
@@ -84,7 +84,7 @@ def test_cloudy_and_quiet_runs_do_not_create_news(
     class Cloudy(SyntheticImagery):
         def cutout(self, scene: Acquisition, grid: Any) -> Cutout:
             result = super().cutout(scene, grid)
-            result.pixels[5 if scene.sensor == "s2" else 2] = 0
+            result.pixels[5] = 0
             return result
 
     for identifier, source, status in [
@@ -135,7 +135,7 @@ def test_relocated_id_does_not_stop_other_locations_or_hide_error(
     first = run_monitor(
         monitor_config, locations, paths[0], paths[1], paths[2], date(2020, 10, 12), live=False
     )
-    assert first["site"]["detections"] == 2
+    assert first["site"]["detections"] == 1
     locations.sites[0] = locations.sites[0].model_copy(update={"longitude": 10})
     again = run_monitor(
         monitor_config, locations, paths[0], paths[1], paths[2], date(2020, 10, 19), live=False
@@ -144,7 +144,7 @@ def test_relocated_id_does_not_stop_other_locations_or_hide_error(
         "synthetic-change": "error",
         "synthetic-quiet": "no_change_detected",
     }
-    assert again["site"]["detections"] == 2
+    assert again["site"]["detections"] == 1
     html = (paths[2] / "locations/synthetic-change.html").read_text(encoding="utf-8")
     assert "location_configuration_or_processing_error" in html
 
@@ -178,6 +178,12 @@ def test_cli_plan_requires_no_credentials_or_state_and_workflow_contract(
         Loader=yaml.BaseLoader,
     )
     assert workflow["on"]["schedule"][0]["cron"] == "23 6 * * 1"
+    assert workflow["on"]["workflow_dispatch"]["inputs"]["rebuild_only"]["default"] == "false"
+    steps = {step.get("name"): step for step in workflow["jobs"]["analyse"]["steps"]}
+    assert steps["Analyse latest seven complete UTC days"]["if"] == "${{ !inputs.rebuild_only }}"
+    assert steps["Rebuild viewer from retained history"]["if"] == "${{ inputs.rebuild_only }}"
+    assert "--live" not in steps["Rebuild viewer from retained history"]["run"]
+
     assert workflow["concurrency"]["cancel-in-progress"] == "false"
     assert workflow["jobs"]["deploy"]["permissions"] == {"pages": "write", "id-token": "write"}
     assert workflow["jobs"]["deploy"]["needs"] == "analyse"
@@ -237,9 +243,9 @@ def test_fresh_git_runners_restore_history_without_duplicate_reports(
         date(2020, 10, 12),
     )
     assert repeated["detection_ids"] == check["detection_ids"]
-    assert len(list((restored / "detections").glob("*.json"))) == 2
+    assert len(list((restored / "detections").glob("*.json"))) == 1
     assert not list(restored.rglob("*.tif"))
-    assert build_site(restored, tmp_path / "fresh-site")["detections"] == 2
+    assert build_site(restored, tmp_path / "fresh-site")["detections"] == 1
 
 
 def test_run_summary_retains_measured_and_unknown_usage_without_request_payloads(

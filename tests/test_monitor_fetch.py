@@ -64,38 +64,21 @@ def response_archive(sensor: str = "s2", wrong_scene: bool = False) -> bytes:
 
 def test_process_contract_scene_isolation_and_evalscript(monitor_config: MonitorConfig) -> None:
     grid = make_grid(Location(id="test", name="Fictional", latitude=0, longitude=0))
-    for sensor in ("s1", "s2"):
-        request = process_request(scene(sensor), grid, monitor_config)
-        assert request["output"]["width"] == request["output"]["height"] == 100
-        assert request["input"]["bounds"]["bbox"] == list(grid.bbox)
-        processing = request["input"]["data"][0]["processing"]
-        if sensor == "s1":
-            assert processing["backCoeff"] == "GAMMA0_TERRAIN"
-            assert processing["orthorectify"] is True
-            assert processing["demInstance"] == "COPERNICUS_30"
-            assert processing["speckleFilter"] == {
-                "type": "LEE",
-                "windowSizeX": 3,
-                "windowSizeY": 3,
-            }
-        else:
-            assert processing["upsampling"] == processing["downsampling"] == "NEAREST"
-            assert "REFLECTANCE" in request["evalscript"]
-        if shutil.which("node"):
-            key = "sentinel1ProductId" if sensor == "s1" else "sentinel2ProductId"
-            code = request["evalscript"] + (
-                "\nconst m={};updateOutputMetadata({orbits:[{tiles:[{"
-                + key
-                + ":"
-                + json.dumps(scene(sensor).scene_id)
-                + "}]}]},null,m);console.log(JSON.stringify([m.userData.scene_ids,"
-                "evaluatePixel([{},{}])]));"
-            )
-            result = subprocess.run(
-                ["node", "-e", code], capture_output=True, text=True, check=True
-            )
-            identifiers, zero = json.loads(result.stdout)
-            assert identifiers == [scene(sensor).scene_id] and set(zero) == {0}
+    request = process_request(scene(), grid, monitor_config)
+    assert request["output"]["width"] == request["output"]["height"] == 100
+    assert request["input"]["data"][0]["processing"]["upsampling"] == "NEAREST"
+    assert "REFLECTANCE" in request["evalscript"]
+    assert "sentinel1" not in json.dumps(request)
+    if shutil.which("node"):
+        code = request["evalscript"] + (
+            "\nconst m={};updateOutputMetadata({orbits:[{tiles:[{sentinel2ProductId:"
+            + json.dumps(scene().scene_id)
+            + "}]}]},null,m);console.log(JSON.stringify([m.userData.scene_ids,"
+            "evaluatePixel([{},{}])]));"
+        )
+        result = subprocess.run(["node", "-e", code], capture_output=True, text=True, check=True)
+        identifiers, zero = json.loads(result.stdout)
+        assert identifiers == [scene().scene_id] and set(zero) == {0}
 
 
 def test_cache_hit_verifies_hash_and_never_repeats_process(
@@ -178,7 +161,7 @@ def test_every_retry_counts_against_request_cap(monitor_config: MonitorConfig) -
     assert len(calls) == 2 and transport.remaining == 0
 
 
-def test_unknown_relative_orbit_never_requests_pixels(
+def test_radar_requests_are_refused_before_network_access(
     monitor_config: MonitorConfig, tmp_path: Path
 ) -> None:
     calls = []
@@ -191,8 +174,10 @@ def test_unknown_relative_orbit_never_requests_pixels(
         monitor_config, tmp_path, httpx.Client(transport=httpx.MockTransport(handler))
     )
     grid = make_grid(Location(id="test", name="Fictional", latitude=0, longitude=0))
-    with pytest.raises(ProviderError, match="geometry_unverified"):
-        fetcher.cutout(scene("s1").model_copy(update={"relative_orbit": None}), grid)
+    with pytest.raises(ProviderError, match="unsupported_sensor"):
+        fetcher.cutout(scene().model_copy(update={"sensor": "s1"}), grid)
+    with pytest.raises(ProviderError, match="unsupported_sensor"):
+        fetcher.discover(grid, "s1", *windows(date(2020, 10, 12))[::2])
     assert not calls
 
 

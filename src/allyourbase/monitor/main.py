@@ -19,7 +19,7 @@ from allyourbase.monitor.config import (
     windows,
 )
 from allyourbase.monitor.detect import detect
-from allyourbase.monitor.fetch import Cutout, Fetcher, radar_group, same_observation
+from allyourbase.monitor.fetch import Cutout, Fetcher, require_optical, same_observation
 from allyourbase.monitor.prepare import Comparison, compare
 from allyourbase.monitor.report import build_site, save_detection, write_json
 from allyourbase.providers.contracts import Acquisition, ProviderError
@@ -50,7 +50,7 @@ def check_location(
     errors = []
     results: list[tuple[Comparison, Any]] = []
     usable = set()
-    for sensor in ("s2", "s1"):
+    for sensor in ("s2",):
         try:
             scenes = imagery.discover(grid, sensor, baseline_start, end)
         except (ProviderError, ValueError, OSError, KeyError, TypeError) as exc:
@@ -63,14 +63,9 @@ def check_location(
         for scene in sorted(scenes, key=lambda s: (s.acquired_at, s.scene_id)):
             if not baseline_start <= scene.acquired_at < end:
                 continue
-            if sensor == "s1":
-                try:
-                    radar_group(scene)
-                except ProviderError:
-                    skipped.append(
-                        {"scene_id": scene.scene_id, "reason": "radar_geometry_unverified"}
-                    )
-                    continue
+            if scene.sensor != "s2":
+                errors.append({"sensor": sensor, "code": "unsupported_sensor"})
+                continue
             if any(same_observation(scene, previous) for previous in seen_observations):
                 skipped.append(
                     {"scene_id": scene.scene_id, "reason": "same_acquisition_alternative_product"}
@@ -86,11 +81,7 @@ def check_location(
         targets = [c for c in cutouts if target_start <= c.acquisition.acquired_at < end]
         comparisons = []
         for current in targets:
-            matching = [
-                c
-                for c in baselines
-                if sensor == "s2" or radar_group(c.acquisition) == radar_group(current.acquisition)
-            ]
+            matching = [c for c in baselines]
             comparison = compare(current, matching, config)
             mask = detect(comparison, config)
             sufficient = comparison.coverage >= config.minimum_common_coverage
@@ -125,15 +116,7 @@ def check_location(
         )
     ids = []
     for comparison, mask in results:
-        support = [
-            other.current.acquisition.scene_id
-            for other, other_mask in results
-            if other.current.acquisition.sensor != comparison.current.acquisition.sensor
-            and (mask & other_mask).any()
-        ]
-        ids.append(
-            save_detection(history, location, comparison, mask, config, dates, support)["id"]
-        )
+        ids.append(save_detection(history, location, comparison, mask, config, dates)["id"])
     check = {
         "schema_version": 1,
         "location": location.model_dump(mode="json"),
@@ -168,6 +151,8 @@ class SyntheticImagery:
     def discover(
         self, grid: Grid, sensor: str, start: datetime, end: datetime
     ) -> list[Acquisition]:
+        if sensor != "s2":
+            raise ValueError("synthetic monitor observations are Sentinel-2 only")
         return [
             Acquisition(
                 provider="synthetic",
@@ -175,26 +160,18 @@ class SyntheticImagery:
                 scene_id=f"synthetic-{sensor}-{day}",
                 sensor=sensor,
                 acquired_at=self.end - timedelta(days=day),
-                relative_orbit=17 if sensor == "s1" else None,
-                orbit_direction="ascending" if sensor == "s1" else None,
-                instrument_mode="IW" if sensor == "s1" else None,
-                polarisations=("VV", "VH") if sensor == "s1" else (),
             )
             for day in (32, 20, 10, 2)
         ]
 
     def cutout(self, scene: Acquisition, grid: Grid) -> Cutout:
-        sensor = scene.sensor
-        data = np.zeros((6 if sensor == "s2" else 4, 100, 100), dtype=np.float32)
-        if sensor == "s2":
-            data[:4] = 0.15
-            data[4] = 4
-            data[5] = 1
-        else:
-            data[:2] = 0.08
-            data[2] = 1
+        require_optical(scene)
+        data = np.zeros((6, 100, 100), dtype=np.float32)
+        data[:4] = 0.15
+        data[4] = 4
+        data[5] = 1
         if self.changed and scene.acquired_at == self.end - timedelta(days=2):
-            data[: 4 if sensor == "s2" else 2, 35:55, 40:65] = 0.45 if sensor == "s2" else 0.4
+            data[:4, 35:55, 40:65] = 0.45
         return Cutout(scene, data, grid)
 
 
@@ -280,7 +257,7 @@ def run_monitor(
                 "observations": [asdict(o) for o in imagery.transport.observations],
             },
         )
-        built = build_site(history, output)
+        built = build_site(history, output, locations)
     return {
         "statuses": statuses,
         "site": built,

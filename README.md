@@ -1,6 +1,6 @@
 # AllYourBase — Sentinel ground-change monitor
 
-A small coordinate-based Sentinel-1/2 MVP. Check a fixed **1 km × 1 km** square
+A small coordinate-based Sentinel-2 optical MVP. Check a fixed **1 km × 1 km** square
 against its earlier imagery and report **possible ground change**. Analysis runs
 in Python; weekly GitHub Actions retain report history and deploy a plain static
 site through GitHub Pages.
@@ -54,6 +54,7 @@ Edit `sites.yaml`:
 sites:
   - id: my-location
     name: My location
+    category: Airfields
     latitude: 60.0
     longitude: 25.0
     size_m: 1000
@@ -89,12 +90,33 @@ branch or Pages artifact. A location failure preserves earlier detections, recor
 an error, and allows other locations to continue.
 
 The live report is [savvyboi.github.io/AllYourBase](https://savvyboi.github.io/AllYourBase/).
-Its eight-file Pages artifact and six-file results branch contain only the expected
-site assets and small JSON/PNG records. Desktop/mobile browser checks pass. The
-next unattended run is scheduled for **2026-10-19 at 06:23 UTC**.
-[Historical validation](docs/historical-validation.md) found substantial radar
-flags in pre-event controls; initial thresholds remain unaccepted. The unattended
-run and further independent validation remain open acceptance checks.
+The earlier scheduled publication succeeded on October 19. This Sentinel-2/category
+scope must be merged and published before the live viewer changes.
+
+## Group sites by category
+
+`category` is optional and defaults to `Uncategorized`. Chkalovsky starts in
+`Airfields`. Categories and display names can change without moving a site's grid.
+
+```sh
+uv sync --locked --extra monitor --extra review
+uv run --extra monitor --extra review allyourbase monitor review
+```
+
+Open `http://127.0.0.1:8766/`, select sites, type an existing/new category and save.
+The existing catalogue review UI also links to **Monitor sites and categories**.
+The local editor preserves YAML comments and coordinates and refuses stale edits.
+
+```sh
+uv run --extra monitor allyourbase monitor sites --category Airfields
+uv run --extra monitor allyourbase monitor categorize chkalovsky --category Airfields
+```
+
+Commit and push `sites.yaml`, then run the GitHub workflow with **Rebuild only**
+for a category-only publication with no imagery requests. Local `monitor build`
+uses current categories for retained history. The online viewer groups locations
+and filters both checks and detections by category, with status filters for checks.
+Category links and URL parameters retain the selected view.
 
 ## What results mean
 
@@ -105,19 +127,18 @@ dates, usable sensors, valid common coverage, separate sensor areas, highlighted
 patches, before/current previews, source scene IDs, analysis version, thresholds
 and Copernicus attribution. Baseline previews are labelled median composites.
 
-Thresholds in `config/monitor.yaml` are prototypes: optical mean absolute difference
->0.10, radar VV or VH difference >3 dB, patches of at least nine connected cells.
-Comparisons need at least two independent baseline observations per pixel and
-70% valid common coverage. Radar requires matching relative orbit, direction,
-IW mode and VV/VH; missing geometry is skipped. Optical conservatively keeps land
-SCL 4/5 and buffers cloud/shadow masks. The 20 m SCL is nearest-neighbour sampled
-onto the 10 m grid.
+The active monitor fetches and analyses Sentinel-2 only. Old radar reports stay
+archived and do not appear in the active viewer or influence optical check status.
+Thresholds in `config/monitor.yaml` are prototypes: mean absolute four-band
+reflectance difference >0.10 and at least nine connected cells. Comparisons need
+two independent earlier observations per pixel and 70% valid common coverage.
+SCL 4/5, dataMask and a cloud/shadow buffer conservatively screen optical data.
+SCL is native 20 m, sampled onto the fixed 10 m output grid with nearest neighbour.
 
-Weather, moisture, vegetation, snow and misalignment can produce changes. These
-reports do not establish cause, activity, deployments, object counts or a confidence
-percentage. A 10 m output grid does not guarantee 10 m resolving power. Independent
-historical evaluation has not established reliable thresholds; pre-event controls
-also produce substantial radar flags. See [historical validation](docs/historical-validation.md).
+Weather, moisture, vegetation, snow and misalignment can produce differences.
+Reports do not establish cause, activity, deployments, object counts or confidence
+percentages. Missing/cloudy data is insufficient rather than a quiet result.
+Optical thresholds remain unvalidated; see [current acceptance status](docs/build-plan.md).
 
 ## Verify
 
@@ -127,7 +148,8 @@ uv run --extra access --extra ingestion --extra review --extra monitor python sc
 uv run --extra access --extra ingestion --extra review --extra monitor pre-commit run --all-files
 ```
 
-Current validation: 295 tests, required lint/type/schema/catalogue checks, live
-historical cutouts, repeat cache/history checks, desktop and 375 px browser QA.
+Current validation: 296 tests, required lint/type/schema/catalogue checks, live
+historical optical cache, category persistence/security/migration tests, desktop
+and 375 px browser QA.
 Legacy catalogue/access commands are retained; their roadmap is archived under
 [the superseded plan](docs/legacy-build-plan.md).

@@ -38,11 +38,7 @@ def patches(mask: NDArray[np.bool_], minimum: int) -> NDArray[np.bool_]:
 def detect(comparison: Comparison, config: MonitorConfig) -> NDArray[np.bool_]:
     if comparison.coverage < config.minimum_common_coverage:
         return np.zeros((100, 100), dtype=np.bool_)
-    threshold = (
-        config.optical_threshold
-        if comparison.current.acquisition.sensor == "s2"
-        else config.radar_threshold_db
-    )
     return patches(
-        comparison.common & (comparison.difference > threshold), config.minimum_patch_cells
+        comparison.common & (comparison.difference > config.optical_threshold),
+        config.minimum_patch_cells,
     )

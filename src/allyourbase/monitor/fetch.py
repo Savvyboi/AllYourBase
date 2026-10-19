@@ -13,13 +13,12 @@ from typing import Any, cast
 import httpx
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import HttpUrl
 
 from allyourbase.monitor.config import Grid, MonitorConfig
 from allyourbase.providers.auth import TokenProvider
 from allyourbase.providers.contracts import Acquisition, ProviderError
 from allyourbase.providers.http import Transport
-from allyourbase.providers.stac import STACProvider, acquisition_from_item
+from allyourbase.providers.stac import STACProvider
 
 
 @dataclass
@@ -29,32 +28,18 @@ class Cutout:
     grid: Grid
 
 
-def radar_group(scene: Acquisition) -> tuple[int, str, str, tuple[str, ...]]:
-    if (
-        scene.sensor != "s1"
-        or scene.relative_orbit is None
-        or scene.orbit_direction is None
-        or scene.instrument_mode != "IW"
-        or set(scene.polarisations) != {"VV", "VH"}
-    ):
-        raise ProviderError("radar_geometry_unverified", scene.provider)
-    return (
-        scene.relative_orbit,
-        scene.orbit_direction,
-        scene.instrument_mode,
-        tuple(sorted(scene.polarisations)),
-    )
+def require_optical(scene: Acquisition) -> None:
+    if scene.sensor != "s2":
+        raise ProviderError("unsupported_sensor", scene.provider)
 
 
 def same_observation(left: Acquisition, right: Acquisition) -> bool:
     """Adjacent/reprocessed products from one pass are not independent observations.
 
     Sentinel-2 documentation bounds separate same-platform acquisitions by >50 min.
-    Keep a conservative separation for the small-AOI MVP, within radar orbit groups.
+    Keep a conservative separation for the small optical AOI.
     """
     if left.sensor != right.sensor or left.platform != right.platform:
-        return False
-    if left.sensor == "s1" and radar_group(left) != radar_group(right):
         return False
     return abs((left.acquired_at - right.acquired_at).total_seconds()) < 50 * 60
 
@@ -78,38 +63,11 @@ class LimitedTransport(Transport):
 
 
 def process_request(scene: Acquisition, grid: Grid, config: MonitorConfig) -> dict[str, Any]:
-    if scene.sensor == "s1":
-        radar_group(scene)
-        assert scene.orbit_direction is not None
-        bands, units = (
-            ["VV", "VH", "dataMask", "shadowMask"],
-            ["LINEAR_POWER", "LINEAR_POWER", "DN", "DN"],
-        )
-        product = "sentinel1ProductId"
-        filters = {
-            "acquisitionMode": "IW",
-            "orbitDirection": scene.orbit_direction.upper(),
-            "polarization": "DV",
-            "resolution": "HIGH",
-        }
-        processing = {
-            "backCoeff": "GAMMA0_TERRAIN",
-            "orthorectify": True,
-            "demInstance": "COPERNICUS_30",
-            "speckleFilter": {
-                "type": "LEE",
-                "windowSizeX": config.lee_window,
-                "windowSizeY": config.lee_window,
-            },
-            "upsampling": "NEAREST",
-        }
-    else:
-        bands, units = (
-            ["B02", "B03", "B04", "B08", "SCL", "dataMask"],
-            ["REFLECTANCE"] * 4 + ["DN", "DN"],
-        )
-        product, filters = "sentinel2ProductId", {}
-        processing = {"upsampling": "NEAREST", "downsampling": "NEAREST", "harmonizeValues": True}
+    require_optical(scene)
+    bands = ["B02", "B03", "B04", "B08", "SCL", "dataMask"]
+    units = ["REFLECTANCE"] * 4 + ["DN", "DN"]
+    product = "sentinel2ProductId"
+    processing = {"upsampling": "NEAREST", "downsampling": "NEAREST", "harmonizeValues": True}
     script = (
         "//VERSION=3\nfunction setup(){return {input:[{bands:"
         + json.dumps(bands)
@@ -144,7 +102,6 @@ def process_request(scene: Acquisition, grid: Grid, config: MonitorConfig) -> di
                                 (scene.acquisition_end or scene.acquired_at) + margin
                             ).isoformat(),
                         },
-                        **filters,
                     },
                     "processing": processing,
                 }
@@ -165,13 +122,15 @@ def process_request(scene: Acquisition, grid: Grid, config: MonitorConfig) -> di
 def read_pixels(image: bytes, grid: Grid, sensor: str) -> NDArray[np.float32]:
     from rasterio.io import MemoryFile
 
+    if sensor != "s2":
+        raise ValueError("only Sentinel-2 cutouts are supported")
     with MemoryFile(image) as memory, memory.open() as dataset:
         if (
             dataset.crs is None
             or dataset.crs.to_epsg() != grid.epsg
             or dataset.width != 100
             or dataset.height != 100
-            or dataset.count != (6 if sensor == "s2" else 4)
+            or dataset.count != 6
             or set(dataset.dtypes) != {"float32"}
         ):
             raise ValueError("cutout grid/band contract mismatch")
@@ -181,14 +140,11 @@ def read_pixels(image: bytes, grid: Grid, sensor: str) -> NDArray[np.float32]:
         ):
             raise ValueError("cutout transform mismatch")
         pixels = dataset.read().astype(np.float32)
-    categorical = pixels[4:] if sensor == "s2" else pixels[2:]
+    categorical = pixels[4:]
     if not np.isfinite(categorical).all() or not np.isin(categorical[-1], [0, 1]).all():
         raise ValueError("invalid categorical mask")
-    if sensor == "s2":
-        if not np.isin(pixels[4], np.arange(12)).all():
-            raise ValueError("SCL must use nearest-neighbour classes")
-    elif not np.isin(categorical, [0, 1]).all():
-        raise ValueError("invalid radar masks")
+    if not np.isin(pixels[4], np.arange(12)).all():
+        raise ValueError("SCL must use nearest-neighbour classes")
     return cast(NDArray[np.float32], pixels)
 
 
@@ -201,56 +157,14 @@ class Fetcher:
     def discover(
         self, grid: Grid, sensor: str, start: datetime, end: datetime
     ) -> list[Acquisition]:
+        if sensor != "s2":
+            raise ProviderError("unsupported_sensor", "cdse_monitor")
         provider = self.config.provider.model_copy(
-            update={
-                "sensor": sensor,
-                "collection": "sentinel-2-l2a" if sensor == "s2" else "sentinel-1-grd",
-            }
+            update={"sensor": "s2", "collection": "sentinel-2-l2a"}
         )
         discovery = STACProvider("cdse_monitor", provider, self.transport)
         discovery.auth = self.auth
-        scenes = discovery.discover(grid.geographic(), start, end)
-        if sensor == "s1":
-            scenes = [self._orbit_metadata(s) for s in scenes]
-        return scenes
-
-    def _orbit_metadata(self, scene: Acquisition) -> Acquisition:
-        if scene.relative_orbit is not None:
-            return scene
-        # Some Sentinel Hub Catalog responses omit relative orbit. Query the public
-        # CDSE STAC by exact product ID; never infer it from direction or date.
-        try:
-            page = self.transport.json(
-                "POST",
-                "https://stac.dataspace.copernicus.eu/v1/search",
-                provider="cdse_monitor",
-                operation="orbit_metadata",
-                json_body={
-                    "collections": ["sentinel-1-grd"],
-                    "ids": [scene.scene_id, scene.scene_id.removesuffix(".SAFE") + ".SAFE"],
-                    "limit": 5,
-                },
-            )
-            candidates = []
-            provider = self.config.provider.model_copy(
-                update={"catalogue_url": HttpUrl("https://stac.dataspace.copernicus.eu/v1")}
-            )
-            for raw in page.get("features", []):
-                other = acquisition_from_item(raw, "cdse_monitor", provider)
-                if (
-                    other.scene_id.removesuffix(".SAFE") == scene.scene_id.removesuffix(".SAFE")
-                    and other.acquired_at == scene.acquired_at
-                    and other.relative_orbit is not None
-                    and other.orbit_direction == scene.orbit_direction
-                    and other.instrument_mode == scene.instrument_mode
-                    and set(other.polarisations) == set(scene.polarisations)
-                ):
-                    candidates.append(other)
-            if len({s.relative_orbit for s in candidates}) == 1:
-                return scene.model_copy(update={"relative_orbit": candidates[0].relative_orbit})
-        except (ProviderError, ValueError, KeyError, TypeError):
-            pass
-        return scene
+        return discovery.discover(grid.geographic(), start, end)
 
     def cutout(self, scene: Acquisition, grid: Grid) -> Cutout:
         request = process_request(scene, grid, self.config)

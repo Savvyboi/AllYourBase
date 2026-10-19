@@ -1,3 +1,5 @@
+> Historical owner plan from 2026-10-15. On 2026-10-20 the owner removed Sentinel-1 and added local/online site categories; see [ADR 0005](adr/0005-optical-only-categories.md) and [the active roadmap](build-plan.md). Other optical/grid/history requirements continue to apply.
+
 # Sentinel ground-change monitor: coding-agent plan
 
 Build a small working MVP. Given coordinates, monitor a 1 km × 1 km square, analyse Sentinel-1 and Sentinel-2 imagery acquired during the last seven days, and automatically publish possible changes to GitHub Pages.

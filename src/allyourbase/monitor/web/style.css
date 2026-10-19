@@ -35,3 +35,11 @@ button[aria-pressed=true]{background:#183e54;color:white}
 .images{grid-template-columns:1fr}
 h1{font-size:2.1rem}
 }
+
+select{font:inherit;max-width:100%;padding:9px 12px;border:1px solid #b4c7d5;border-radius:8px;background:white;color:#203f55}
+.category-filter{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:18px 0}
+.category-group{margin:24px 0}.category-group>h3{margin-bottom:12px;font-size:1.1rem}
+.category-badge{font-size:.85rem;color:#326777;overflow-wrap:anywhere}
+button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #367f9b;outline-offset:3px}
+
+h3{overflow-wrap:anywhere}

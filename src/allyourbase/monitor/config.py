@@ -7,7 +7,7 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from allyourbase.models.common import Contract, NonEmpty, Slug
 from allyourbase.models.geometry import Geometry, Polygon
@@ -21,6 +21,12 @@ class Location(Contract):
     latitude: Annotated[float, Field(ge=-90, le=90)]
     longitude: Annotated[float, Field(ge=-180, le=180)]
     size_m: Literal[1000] = 1000
+    category: Annotated[str, Field(min_length=1, max_length=80)] = "Uncategorized"
+
+    @field_validator("category", mode="before")
+    @classmethod
+    def clean_category(cls, value: Any) -> Any:
+        return (" ".join(value.split()) or "Uncategorized") if isinstance(value, str) else value
 
 
 class Locations(Contract):
@@ -33,28 +39,30 @@ class Locations(Contract):
         return self
 
 
+class OpticalAccessSettings(AccessSettings):
+    """Reuse HTTP/OAuth settings without exposing unused legacy radar fields."""
+
+    radar_time_margin_seconds: Annotated[int, Field(ge=0, exclude=True)] = 1
+    radar_request_reservation_pu: Annotated[float, Field(gt=0, exclude=True)] = 50.0
+
+
 class MonitorConfig(Contract):
     schema_version: Literal[1] = 1
     optical_threshold: Annotated[float, Field(gt=0)] = 0.10
-    radar_threshold_db: Annotated[float, Field(gt=0)] = 3.0
     minimum_patch_cells: Annotated[int, Field(ge=1)] = 9
     minimum_baseline_observations: Annotated[int, Field(ge=2)] = 2
     minimum_common_coverage: Annotated[float, Field(ge=0.7, le=1)] = 0.7
     cloud_buffer_cells: Annotated[int, Field(ge=0, le=5)] = 1
-    lee_window: Literal[3, 5, 7] = 3
     max_requests: Annotated[int, Field(ge=1, le=500)] = 100
     retry_attempts: Annotated[int, Field(ge=1, le=5)] = 3
     optical_preview_max: Annotated[float, Field(gt=0)] = 0.4
-    radar_preview_db: tuple[float, float] = (-25.0, 0.0)
     provider: Provider
-    http: AccessSettings
+    http: OpticalAccessSettings
 
     @model_validator(mode="after")
     def bounded(self) -> "MonitorConfig":
-        if self.radar_preview_db[0] >= self.radar_preview_db[1]:
-            raise ValueError("radar preview stretch must increase")
-        if self.provider.kind != "sentinelhub":
-            raise ValueError("the MVP uses CDSE Sentinel Hub")
+        if self.provider.kind != "sentinelhub" or self.provider.sensor != "s2":
+            raise ValueError("the monitor uses CDSE Sentinel Hub Sentinel-2 only")
         return self
 
     def analysis_version(self) -> str:
@@ -132,8 +140,8 @@ def freeze_grid(location: Location, path: Path) -> Grid:
     if path.exists():
         retained = json.loads(path.read_text(encoding="utf-8"))
         # Renaming a display label is allowed; coordinate/size/CRS changes need a new ID.
-        expected = {k: v for k, v in content["location"].items() if k != "name"}
-        actual = {k: v for k, v in retained["location"].items() if k != "name"}
+        expected = {k: v for k, v in content["location"].items() if k not in {"name", "category"}}
+        actual = {k: v for k, v in retained["location"].items() if k not in {"name", "category"}}
         if actual != expected or retained["grid"] != content["grid"]:
             raise ValueError("location grid changed; use a new stable location ID")
         return Grid.model_validate(retained["grid"])

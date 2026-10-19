@@ -1,126 +1,91 @@
 # AllYourBase agent guide
 
-Updated 2026-10-15 (Europe/Helsinki), after the owner replaced the project scope.
-This file applies to the whole repository. Current user instructions take precedence.
+Updated 2026-10-20 (Europe/Helsinki). Applies to this repository. Current user
+instructions take precedence.
 
-## Active goal
+## Active scope
 
-Build the small coordinate-based Sentinel ground-change MVP specified in the
-[owner's replacement plan](docs/ground-change-agent-plan.md). The current roadmap
-and acceptance status are in [docs/build-plan.md](docs/build-plan.md). The earlier
-catalogue/Colab/Hugo plan is preserved in [the legacy roadmap](docs/legacy-build-plan.md)
-and [legacy guide](docs/legacy-agent-guide.md); its milestones no longer gate this MVP.
-Do not resume catalogue research or ask for old packet approval as a prerequisite.
+The owner removed Sentinel-1 and requested category grouping in the local tool
+and category views online. Build the Sentinel-2-only monitor described in
+[the current guide](docs/ground-change-mvp.md), [roadmap](docs/build-plan.md) and
+[ADR 0005](docs/adr/0005-optical-only-categories.md). Earlier catalogue/Colab/Hugo
+milestones and two-sensor validation are historical. Do not resume radar fetching
+or catalogue research as prerequisites.
 
-The MVP uses `sites.yaml`, one location initially, a fixed 1 km metric square and
-100 × 100 cells at 10 m spacing. It compares every usable acquisition in the latest
-seven complete UTC days with the preceding 28 days. `--end-date` is an exclusive
-UTC date for historical runs. Start location: Chkalovsky, using the retained
-OurAirports UUMU centre. The owner authorized using any existing approved base
-on 2026-10-15. This square is a processing window, not a surveyed facility boundary.
+`sites.yaml` defines stable site IDs, coordinates, size 1000 m and an optional
+category (default Uncategorized). Start with Chkalovsky at 55.8783, 38.061699,
+category Airfields. The centre comes from retained OurAirports UUMU evidence;
+the owner authorized any existing base on October 15. This is a processing square,
+not a surveyed boundary. Categories/names are mutable display metadata; they must
+not relocate the frozen grid or change detection IDs. Coordinate/size changes
+require a new ID.
 
-Use CDSE Sentinel Hub Catalog and Process APIs, OAuth credentials, numerical TIFFs,
-one acquisition at a time and exact grid/scene verification. Optical uses B02,
-B03, B04, B08, SCL and dataMask. Radar uses IW VV/VH, terrain gamma-zero,
-orthorectification, Copernicus 30 m DEM, LEE 3×3 and data/shadow masks. A 10 m
-grid does not imply 10 m resolving power. Preserve product identity, including
-COG suffixes. Unknown relative orbit means no radar comparison.
+Freeze 100x100 cells at 10 m in a metric CRS, extent 500 m from the centre. Compare
+every usable observation in seven complete UTC days against the preceding 28 days.
+`--end-date` is exclusive UTC midnight. Use CDSE Catalog/Process numerical
+Sentinel-2 L2A B02/B03/B04/B08, SCL and dataMask. Verify exact product identity,
+CRS/bounds/transform/bands; preserve COG suffixes and categorical nearest sampling.
+Keep SCL 4/5 with a cloud/shadow buffer. Require >=2 independent baseline
+observations per pixel and >=70% common coverage. Alternative products from the
+same pass cannot inflate counts. Prototype detection is mean absolute four-band
+reflectance difference >0.10 and >=9 eight-connected cells. Optical thresholds
+are not independently accepted. Missing/cloudy data is insufficient data.
 
-Keep prototype thresholds in `config/monitor.yaml`: optical mean absolute band
-reflectance difference >0.10, radar absolute VV or VH difference >3 dB, at least
-nine eight-connected cells, at least two independent earlier baseline observations
-per evaluated pixel, and at least 70% valid common AOI coverage. Optical keeps only
-SCL 4/5 with a cloud/shadow buffer; categorical data uses nearest neighbour.
-Radar baseline medians are linear before dB conversion, grouped by relative
-orbit, direction, mode and polarisation. Alternative tile/reprocessed products
-from one pass must not inflate observation counts. Baselines exclude the target week.
+Use one Python pipeline in `src/allyourbase/monitor/`. Radar is refused at active
+fetch/comparison boundaries. Keep legacy provider/catalogue code and older reports
+as historical evidence. The static builder must exclude radar news/assets and
+project older combined checks to their optical status while preserving originals.
 
-Every detection is **possible ground change**. Do not infer cause, military
-activity, unit/equipment deployments, intent, people/vehicle counts or confidence
-percentages. Keep sensor areas separate. A quiet result describes only valid
-observed coverage; missing data is `insufficient_data`, and failures are `error`.
+The local category UI (`monitor review`, port 8766) and CLI (`monitor sites`,
+`monitor categorize`) edit categories in YAML. It is also linked from the existing
+catalogue review UI. Preserve comments/coordinates; use atomic writes, locking,
+revision checks and loopback/session/same-origin protection. The online viewer
+groups sites, filters category plus check status, and applies categories to recent
+optical reports. Current categories override display metadata on build. Manual
+Actions Rebuild only publishes retained history/category edits without imagery.
 
-## Implementation and evidence
+Every detection is possible ground change. Do not infer cause, military activity,
+deployments, intent, object counts or invented confidence. A 10 m grid does not
+imply 10 m resolving power. No-change only describes valid observed coverage.
 
-- PRs #1–#11 are merged. PR #8 merged at `9e0269b`; all previous source snapshots,
-  approval archives and provider evidence remain intact and are historical records.
-- Active implementation is under `src/allyourbase/monitor/`: configuration/grid,
-  fetch, prepare, detect, report and CLI modules. `allyourbase monitor run` supports
-  `--plan`, `--demo` or explicit `--live`; `monitor build` rebuilds retained history.
-  Legacy catalogue/access commands and their checks remain available.
-- Local historical Chkalovsky check: target 2026-10-05 through 2026-10-11 UTC,
-  exclusive end 2026-10-12; baseline 2026-09-07 through 2026-10-04. Both sensors
-  supplied usable observations. One radar candidate was generated; one optical
-  comparison was quiet at 99.76% common coverage, three were insufficient.
-  These are prototype outputs, not independently verified real-world events.
-- The corrected uncached run used 47 HTTP requests and reported 7.1607681139640045
-  total PU across catalogue/Process responses. A later run after product
-  deduplication used three catalogue/auth requests, zero Process calls, reported
-  0.04 PU and retained one detection. Earlier scene-selection diagnostics are
-  preserved; charges for the first rejected batch were not retained and remain
-  unknown. Do not present these figures as account-wide usage.
-- External workspaces: `../monitor-data` for cache/usage/QA, `../monitor-results`
-  for small JSON/PNG history, `../monitor-site` for generated static output.
-  Earlier `../phase1-data` and `../phase2-data` are preserved. All are outside Git.
-- 295 tests, Ruff, formatting, strict mypy and all legacy settings/catalogue/schema
-  checks pass. Headless Edge checks of desktop and 375 px mobile verify images,
-  filter buttons, detail links, provenance, no overflow and no JS/HTTP errors.
-  A flagged radar comparison and quiet optical comparison were visually inspected.
-- The requested known-change fixture passes. Independent historical CEMS EMSR773
-  evaluation is documented in `docs/historical-validation.md`: radar flags the
-  event and substantial pre-event control areas, including matching-orbit cached
-  controls. Optical is insufficient in both live windows. Thresholds are not
-  accepted; no cause or accuracy is established. No validation reports are public.
-  External receipts: `../monitor-data/validation-emsr773/`. Two bounded live runs
-  used 29 + 7 requests and reported 6.397828733598581 + 1.0572525981033687 PU,
-  with zero unknown Process charges; the follow-up control used no network.
-- The CLI run summary now includes safe measured/unknown usage aggregates from
-  the local journal, allowing future Actions logs to retain those totals. Full
-  observations and payloads are excluded. No detection algorithm/config changes.
-- Weekly/manual Actions workflow is implemented in `.github/workflows/monitor.yml`:
-  persistent `monitor-results` branch, single-run concurrency, explicit permissions,
-  official Pages artifact/deployment actions and bounded deployment retries.
-  Repository Actions secrets and workflow-based Pages are configured. PR #9 and
-  required workflow fix #10 are merged. Actionlint v1.7.12 validates workflows in CI.
-  First manual publication succeeded on 2026-10-15 for end 2026-10-12 at code
-  `76991305c6c781d94aae46aa0c74643ab9d5eb43`: 28 requests, one radar candidate,
-  verified six-file results branch and eight-file Pages artifact, working public
-  desktop/mobile report at https://savvyboi.github.io/AllYourBase/. Numerical
-  provenance matches the local run. The ephemeral Actions PU journal was not
-  retained, so that run's PU total is unknown. Receipt: external
-  `../monitor-data/publication-validation.json`; run ID `38756679440`.
-  Next unattended scheduled run: 2026-10-19 06:23 UTC; its execution/history and
-  further independent evaluation/threshold acceptance remain open. Do not mark
-  the MVP complete yet.
+## Evidence and acceptance
+
+PRs #1-#12 are merged; the sensor/category change is prepared separately for review.
+The earlier manual publication and October 19 unattended two-sensor publication
+succeeded (scheduled run `39261644688`, main `d76ba5e`). Durable history is on
+`monitor-results`. The next configured weekly trigger is October 26 06:23 UTC;
+start time can be delayed. The first optical-only/category publication and its
+following unattended run remain unverified before merge/deployment.
+
+296 tests and required checks pass. Optical cache replay is quiet with zero
+network requests. Rebuilding real durable history yields one site check and no
+optical detections; archived radar reports are preserved. Desktop/mobile category
+QA covers saves/reload persistence, combined filters, empty states, category links,
+images and no overflow/JS/HTTP errors. External evidence: `../monitor-optical-qa/`.
+[Older live/provider/usage evidence](docs/ground-change-v0.1-history.md) and
+[CEMS historical validation](docs/historical-validation.md) are retained. The latter
+flagged radar pre-event controls and had insufficient optical coverage; it does
+not calibrate current optical thresholds. Do not call the MVP calibrated/complete.
 
 ## Working rules
 
-Preserve old evidence, approval records, source decisions and unrelated edits.
-The legacy ten-site catalogue gate, dated unit/equipment requirements, Colab runtime,
-Hugo frontend and human-reviewed publication policy are superseded for this MVP.
-The owner now requests automatic possible-change publication through Actions/Pages.
+Preserve old evidence, approvals, records, raw workspaces and unrelated edits.
+Keep code/config/docs/tests on main and only small JSON/PNG history on the results
+branch. Keep raw rasters, payloads, credentials, environments, full usage journals
+and QA outside Git/published output. Publish only the builder's allow-listed site.
+Refuse unexpected output files/symlinks. Retain history on location failures.
+Use explicit weekly/manual Actions with concurrency, permissions, retries and
+safe measured/unknown usage aggregates. Never print credentials, raw responses
+or signed URLs. Reuse `CDSE_CLIENT_ID`/`CDSE_CLIENT_SECRET` secure credentials;
+do not request values. Tokens remain in memory. Process calls retry explicit 429
+only; do not blindly repeat ambiguous charged failures. Bound every HTTP attempt.
+
 Keep code changes reviewable through draft PRs to Savvyboi/AllYourBase; do not merge
-PRs without authorization. Prepare deployment completely before any approval step.
-
-Keep raw rasters, source payloads, credentials, local environments, diagnostics and
-full usage logs outside Git and published output. Only small report JSON/PNG history
-belongs on the dedicated results branch. Main holds code/config/docs/tests.
-Publish only the static builder's allow-listed output; never upload the workspace.
-Use environment variable names `CDSE_CLIENT_ID` and `CDSE_CLIENT_SECRET`, stored as
-Actions secrets. Reuse existing secure credentials; never request or print values.
-Tokens remain in memory. Increment `monitor.ANALYSIS_VERSION` for output-affecting
-algorithm changes, and preserve reports from earlier versions. Do not include raw response bodies or signed URLs in logs.
-
-Transport retries catalogue/transient reads with backoff and counts every attempt
-against the configured cap. Process calls retry explicit 429 rejections only;
-ambiguous charged failures are not blindly repeated. Retain measured and unknown
-costs separately. Inspect source IDs and grid metadata before using cutouts.
-
-Do not add object recognition, a coordinate-entry form, a database, a complex
-frontend or country-specific algorithm code. Resolve routine implementation choices
-autonomously. Keep the roadmap and ADRs current when behavior or scope changes.
-
-## Development and verification
+PRs without authorization. Prepare deployment completely before approval. The
+owner authorizes automatic possible-change Pages publication, replacing the
+legacy human-reviewed publication policy. Do not add object recognition, a
+coordinate-entry form, database or complex frontend. Increment ANALYSIS_VERSION
+for output-affecting algorithm changes; this scope uses ground-change-0.2.0.
 
 ```sh
 uv sync --locked --extra access --extra ingestion --extra review --extra monitor
@@ -128,15 +93,9 @@ uv run --extra access --extra ingestion --extra review --extra monitor python sc
 uv run --extra access --extra ingestion --extra review --extra monitor pre-commit run --all-files
 ```
 
-On this Windows host, default sandbox process startup may fail with
-`setup refresh had errors`; bounded reviewed PowerShell commands work. The legacy
-review service holds `.venv/Scripts/allyourbase.exe` open, so the current MVP checks
-use `UV_PROJECT_ENVIRONMENT` pointing at the external sibling `../monitor-env`.
-Do not stop unrelated services or mistake infrastructure errors for missing secrets.
-
-For source edits, run appropriate offline tests and required checks. Use numerical
-fixtures and mocked non-secret API responses. Live imagery checks must serve actual
-MVP validation, remain bounded and retain costs. Do not repeat paid Process calls
-just to verify documentation; reuse verified cache and earlier reports.
-Before committing, inspect the diff and staged paths for credentials, imagery and
-workspace files. Keep remaining validation gaps explicit.
+Default Windows sandbox process startup can fail with `setup refresh had errors`;
+bounded reviewed PowerShell commands work. A legacy review service holds the old
+.venv CLI open; use external `UV_PROJECT_ENVIRONMENT=../monitor-env`. Do not stop
+unrelated services. Resolve routine implementation choices autonomously. Reuse
+cache for validation, retain measured/unknown costs, and never repeat paid Process
+calls merely to verify documentation. Inspect diffs/staged paths before committing.
