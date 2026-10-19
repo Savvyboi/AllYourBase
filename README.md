@@ -95,6 +95,11 @@ scope must be merged and published before the live viewer changes.
 
 ## Group sites by category
 
+On Windows, double-click **Start Local Tool.cmd** in the repository. It prepares
+its own environment, starts the local editor and opens your browser when ready.
+Keep the launcher window open while using the tool; close it to stop. Clicking
+again opens the already-running tool.
+
 `category` is optional and defaults to `Uncategorized`. Chkalovsky starts in
 `Airfields`. Categories and display names can change without moving a site's grid.
 
