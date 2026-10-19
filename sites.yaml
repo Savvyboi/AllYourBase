@@ -2,6 +2,7 @@
 sites:
 - id: chkalovsky
   name: Chkalovsky
+  category: Airfields
   latitude: 55.8783
   longitude: 38.061699
   size_m: 1000

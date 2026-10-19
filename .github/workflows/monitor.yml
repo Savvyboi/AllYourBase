@@ -9,6 +9,11 @@ on:
         description: 'Exclusive UTC end date (YYYY-MM-DD); blank = today UTC'
         required: false
         type: string
+      rebuild_only:
+        description: 'Rebuild the viewer and categories from history without fetching imagery'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ground-change-monitor
@@ -46,6 +51,7 @@ jobs:
             git -C "$RUNNER_TEMP/monitor-results" switch --orphan monitor-results
           fi
       - name: Analyse latest seven complete UTC days
+        if: ${{ !inputs.rebuild_only }}
         env:
           UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/monitor-env
           CDSE_CLIENT_ID: ${{ secrets.CDSE_CLIENT_ID }}
@@ -64,6 +70,18 @@ jobs:
             --workspace "$RUNNER_TEMP/monitor-data" \
             --history "$RUNNER_TEMP/monitor-results" \
             --output "$RUNNER_TEMP/monitor-site" "${args[@]}"
+      - name: Rebuild viewer from retained history
+        if: ${{ inputs.rebuild_only }}
+        env:
+          UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/monitor-env
+        shell: bash
+        run: |
+          if ! git -C "$RUNNER_TEMP/monitor-results" rev-parse --verify HEAD > /dev/null 2>&1; then
+            echo 'Run analysis once before rebuilding retained history.'
+            exit 1
+          fi
+          uv run --locked --extra monitor --no-dev allyourbase monitor build \
+            "$RUNNER_TEMP/monitor-results" "$RUNNER_TEMP/monitor-site"
       - name: Persist small reports and previews
         shell: bash
         run: |

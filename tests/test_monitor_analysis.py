@@ -1,6 +1,5 @@
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import pytest
@@ -15,7 +14,7 @@ from allyourbase.monitor.config import (
     windows,
 )
 from allyourbase.monitor.detect import detect, patches
-from allyourbase.monitor.fetch import Cutout, radar_group
+from allyourbase.monitor.fetch import Cutout
 from allyourbase.monitor.main import SyntheticImagery
 from allyourbase.monitor.prepare import compare, valid_pixels
 from allyourbase.providers.contracts import ProviderError
@@ -75,21 +74,19 @@ def test_bad_coordinates_duplicate_ids_and_frozen_grid(tmp_path: Path) -> None:
     path = tmp_path / "grid.json"
     first = freeze_grid(location, path)
     assert freeze_grid(location.model_copy(update={"name": "Renamed"}), path) == first
+    assert freeze_grid(location.model_copy(update={"category": "Airfields"}), path) == first
     with pytest.raises(ValueError, match="new stable"):
         freeze_grid(location.model_copy(update={"longitude": 1}), path)
 
 
-@pytest.mark.parametrize("sensor", ["s1", "s2"])
 def test_unchanged_fixture_quiet_and_qualifying_patch_detected(
-    sensor: str, monitor_config: MonitorConfig
+    monitor_config: MonitorConfig,
 ) -> None:
-    cutouts = observations(sensor)
+    cutouts = observations()
     comparison = compare(cutouts[-1], cutouts[:-1], monitor_config)
     assert comparison.coverage == 1
     assert int(detect(comparison, monitor_config).sum()) == 500
-    cutouts[-1].pixels[: 2 if sensor == "s1" else 4] = cutouts[0].pixels[
-        : 2 if sensor == "s1" else 4
-    ]
+    cutouts[-1].pixels[:4] = cutouts[0].pixels[:4]
     assert not detect(compare(cutouts[-1], cutouts[:-1], monitor_config), monitor_config).any()
 
 
@@ -129,39 +126,12 @@ def test_cloud_buffer_and_pixelwise_baseline_count(monitor_config: MonitorConfig
     assert not comparison.common[:20].any() and comparison.common[20:40].all()
 
 
-@pytest.mark.parametrize(
-    "field,value",
-    [
-        ("relative_orbit", 18),
-        ("orbit_direction", "descending"),
-        ("instrument_mode", "EW"),
-        ("polarisations", ("VV",)),
-        ("relative_orbit", None),
-    ],
-)
-def test_radar_groups_must_match_and_be_verified(
-    field: str, value: Any, monitor_config: MonitorConfig
-) -> None:
-    cutouts = observations("s1")
-    cutouts[0].acquisition = cutouts[0].acquisition.model_copy(update={field: value})
-    with pytest.raises((ValueError, ProviderError)):
-        compare(cutouts[-1], cutouts[:-1], monitor_config)
-
-
-def test_radar_median_is_linear_before_db_and_masks_nonpositive_power(
-    monitor_config: MonitorConfig,
-) -> None:
-    cutouts = observations("s1")
-    cutouts[0].pixels[:2] = 0.01
-    cutouts[1].pixels[:2] = 0.09
-    comparison = compare(cutouts[-1], cutouts[:2], monitor_config)
-    assert comparison.baseline[0, 0, 0] == pytest.approx(0.05)
-    cutouts[-1].pixels[0, 0, 0] = 0
-    cutouts[-1].pixels[3, 0, 1] = 1
-    cutouts[-1].pixels[2, 0, 2] = 0
-    valid = valid_pixels(cutouts[-1], monitor_config)
-    assert not valid[0, :3].any()
-    assert radar_group(cutouts[-1].acquisition)[0] == 17
+def test_radar_is_refused_by_the_active_monitor(monitor_config: MonitorConfig) -> None:
+    assert not any(key.startswith("radar_") for key in monitor_config.http.model_dump())
+    cutouts = observations()
+    cutouts[-1].acquisition = cutouts[-1].acquisition.model_copy(update={"sensor": "s1"})
+    with pytest.raises(ProviderError, match="unsupported_sensor"):
+        compare(cutouts[-1], [], monitor_config)
 
 
 def test_future_duplicate_or_shifted_baselines_are_refused(monitor_config: MonitorConfig) -> None:

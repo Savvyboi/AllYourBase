@@ -9,7 +9,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from allyourbase.monitor.config import MonitorConfig
-from allyourbase.monitor.fetch import Cutout, radar_group, same_observation
+from allyourbase.monitor.fetch import Cutout, require_optical, same_observation
 
 
 @dataclass
@@ -24,18 +24,7 @@ class Comparison:
 
 def valid_pixels(cutout: Cutout, config: MonitorConfig) -> NDArray[np.bool_]:
     data = cutout.pixels
-    if cutout.acquisition.sensor == "s1":
-        radar_group(cutout.acquisition)
-        return cast(
-            NDArray[np.bool_],
-            (
-                np.isfinite(data[:2]).all(axis=0)
-                & (data[:2] > 0).all(axis=0)
-                & (data[2] == 1)
-                & (data[3] == 0)
-            ),
-        )
-
+    require_optical(cutout.acquisition)
     valid = np.isfinite(data[:4]).all(axis=0) & (data[5] == 1) & np.isin(data[4], [4, 5])
     cloudy = np.isin(data[4], [3, 8, 9, 10])
     radius = config.cloud_buffer_cells
@@ -57,17 +46,14 @@ def compare(current: Cutout, earlier: list[Cutout], config: MonitorConfig) -> Co
         for other in earlier
     ):
         raise ValueError("baseline must contain only earlier observations of the same sensor")
-    if sensor == "s1":
-        group = radar_group(current.acquisition)
-        if any(radar_group(other.acquisition) != group for other in earlier):
-            raise ValueError("radar orbit groups differ")
+    require_optical(current.acquisition)
     # A duplicated product is not an independent baseline observation.
     if len({c.acquisition.scene_id for c in earlier}) != len(earlier) or any(
         same_observation(left.acquisition, right.acquisition)
         for left, right in combinations(earlier, 2)
     ):
         raise ValueError("duplicate baseline acquisition")
-    count = 4 if sensor == "s2" else 2
+    count = 4
     valid = valid_pixels(current, config)
     if earlier:
         masks = np.stack([valid_pixels(other, config) for other in earlier])
@@ -85,12 +71,6 @@ def compare(current: Cutout, earlier: list[Cutout], config: MonitorConfig) -> Co
         baseline = np.full((count, 100, 100), np.nan, dtype=np.float32)
         valid[:] = False
     valid &= np.isfinite(baseline).all(axis=0)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        if sensor == "s1":
-            difference = np.max(
-                np.abs(10 * np.log10(current.pixels[:2]) - 10 * np.log10(baseline)), axis=0
-            )
-        else:
-            difference = np.mean(np.abs(current.pixels[:4] - baseline), axis=0)
+    difference = np.mean(np.abs(current.pixels[:4] - baseline), axis=0)
     difference = np.where(valid, difference, 0).astype(np.float32)
     return Comparison(current, earlier, baseline, valid, difference, float(valid.mean()))
