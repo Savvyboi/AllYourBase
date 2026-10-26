@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "location": {
+    "id": "chkalovsky",
+    "name": "Chkalovsky",
+    "latitude": 55.8783,
+    "longitude": 38.061699,
+    "size_m": 1000,
+    "category": "Airfields"
+  },
+  "dates": {
+    "baseline_start": "2026-09-21T00:00:00+00:00",
+    "target_start": "2026-10-19T00:00:00+00:00",
+    "end_exclusive": "2026-10-26T00:00:00+00:00"
+  },
+  "checked_at": "2026-10-26T13:18:51.117709+00:00",
+  "analysis_version": "ground-change-0.2.0+468e59100cfc",
+  "thresholds": {
+    "schema_version": 1,
+    "optical_threshold": 0.1,
+    "minimum_patch_cells": 9,
+    "minimum_baseline_observations": 2,
+    "minimum_common_coverage": 0.7,
+    "cloud_buffer_cells": 1,
+    "max_requests": 100,
+    "retry_attempts": 3,
+    "optical_preview_max": 0.4
+  },
+  "status": "no_change_detected",
+  "usable_sensors": [
+    "s2"
+  ],
+  "sensors": [
+    {
+      "sensor": "s2",
+      "discovered_acquisitions": 38,
+      "skipped": [
+        {
+          "scene_id": "S2B_MSIL2A_20260922T083559_N0513_R064_T37UDB_20260922T125356.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2A_MSIL2A_20260922T085431_N0513_R107_T37UDB_20260922T115708.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2B_MSIL2A_20260925T084619_N0513_R107_T37UDB_20260925T124845.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2C_MSIL2A_20260927T083721_N0513_R064_T37UDB_20260927T114818.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2C_MSIL2A_20260930T084751_N0513_R107_T37UDB_20260930T120605.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2B_MSIL2A_20261002T083759_N0513_R064_T37UDB_20261002T125444.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2A_MSIL2A_20261002T084731_N0513_R107_T37UDB_20261002T121504.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2B_MSIL2A_20261005T084819_N0513_R107_T37UDB_20261005T110654.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2C_MSIL2A_20261007T083831_N0513_R064_T37UDB_20261007T120702.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2A_MSIL2A_20261009T083801_N0513_R064_T37UDB_20261009T121104.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2C_MSIL2A_20261010T084901_N0513_R107_T37UDB_20261010T122306.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2B_MSIL2A_20261012T083909_N0513_R064_T37UDB_20261012T125503.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2A_MSIL2A_20261012T085431_N0513_R107_T37UDB_20261012T115407.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2B_MSIL2A_20261015T084929_N0513_R107_T37UDB_20261015T111138.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2C_MSIL2A_20261017T083941_N0513_R064_T37UDB_20261017T122409.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2C_MSIL2A_20261020T085001_N0513_R107_T37UDB_20261020T122605.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2B_MSIL2A_20261022T084009_N0513_R064_T37UDB_20261022T122734.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2A_MSIL2A_20261022T084931_N0513_R107_T37UDB_20261022T121550.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        },
+        {
+          "scene_id": "S2B_MSIL2A_20261025T085039_N0513_R107_T37UDB_20261025T111523.SAFE",
+          "reason": "same_acquisition_alternative_product"
+        }
+      ],
+      "comparisons": [
+        {
+          "scene_id": "S2C_MSIL2A_20261020T085001_N0513_R107_T37VDC_20261020T122605.SAFE",
+          "acquired_at": "2026-10-20T08:54:27.408000+00:00",
+          "baseline_scene_ids": [
+            "S2B_MSIL2A_20260922T083559_N0513_R064_T37VDC_20260922T125356.SAFE",
+            "S2A_MSIL2A_20260922T085431_N0513_R107_T37VDC_20260922T115708.SAFE",
+            "S2B_MSIL2A_20260925T084619_N0513_R107_T37VDC_20260925T124845.SAFE",
+            "S2C_MSIL2A_20260927T083721_N0513_R064_T37VDC_20260927T114818.SAFE",
+            "S2C_MSIL2A_20260930T084751_N0513_R107_T37VDC_20260930T120605.SAFE",
+            "S2B_MSIL2A_20261002T083759_N0513_R064_T37VDC_20261002T125444.SAFE",
+            "S2A_MSIL2A_20261002T084731_N0513_R107_T37VDC_20261002T121504.SAFE",
+            "S2B_MSIL2A_20261005T084819_N0513_R107_T37VDC_20261005T110654.SAFE",
+            "S2C_MSIL2A_20261007T083831_N0513_R064_T37VDC_20261007T120702.SAFE",
+            "S2A_MSIL2A_20261009T083801_N0513_R064_T37VDC_20261009T121104.SAFE",
+            "S2C_MSIL2A_20261010T084901_N0513_R107_T37VDC_20261010T122306.SAFE",
+            "S2B_MSIL2A_20261012T083909_N0513_R064_T37VDC_20261012T125503.SAFE",
+            "S2A_MSIL2A_20261012T085431_N0513_R107_T37VDC_20261012T115407.SAFE",
+            "S2B_MSIL2A_20261015T084929_N0513_R107_T37VDC_20261015T111138.SAFE",
+            "S2C_MSIL2A_20261017T083941_N0513_R064_T37VDC_20261017T122409.SAFE"
+          ],
+          "valid_common_fraction": 0.9992,
+          "status": "no_change_detected",
+          "changed_area_m2": 0
+        },
+        {
+          "scene_id": "S2B_MSIL2A_20261022T084009_N0513_R064_T37VDC_20261022T122734.SAFE",
+          "acquired_at": "2026-10-22T08:44:30.068000+00:00",
+          "baseline_scene_ids": [
+            "S2B_MSIL2A_20260922T083559_N0513_R064_T37VDC_20260922T125356.SAFE",
+            "S2A_MSIL2A_20260922T085431_N0513_R107_T37VDC_20260922T115708.SAFE",
+            "S2B_MSIL2A_20260925T084619_N0513_R107_T37VDC_20260925T124845.SAFE",
+            "S2C_MSIL2A_20260927T083721_N0513_R064_T37VDC_20260927T114818.SAFE",
+            "S2C_MSIL2A_20260930T084751_N0513_R107_T37VDC_20260930T120605.SAFE",
+            "S2B_MSIL2A_20261002T083759_N0513_R064_T37VDC_20261002T125444.SAFE",
+            "S2A_MSIL2A_20261002T084731_N0513_R107_T37VDC_20261002T121504.SAFE",
+            "S2B_MSIL2A_20261005T084819_N0513_R107_T37VDC_20261005T110654.SAFE",
+            "S2C_MSIL2A_20261007T083831_N0513_R064_T37VDC_20261007T120702.SAFE",
+            "S2A_MSIL2A_20261009T083801_N0513_R064_T37VDC_20261009T121104.SAFE",
+            "S2C_MSIL2A_20261010T084901_N0513_R107_T37VDC_20261010T122306.SAFE",
+            "S2B_MSIL2A_20261012T083909_N0513_R064_T37VDC_20261012T125503.SAFE",
+            "S2A_MSIL2A_20261012T085431_N0513_R107_T37VDC_20261012T115407.SAFE",
+            "S2B_MSIL2A_20261015T084929_N0513_R107_T37VDC_20261015T111138.SAFE",
+            "S2C_MSIL2A_20261017T083941_N0513_R064_T37VDC_20261017T122409.SAFE"
+          ],
+          "valid_common_fraction": 0.0,
+          "status": "insufficient_data",
+          "changed_area_m2": 0
+        },
+        {
+          "scene_id": "S2A_MSIL2A_20261022T084931_N0513_R107_T37VDC_20261022T121550.SAFE",
+          "acquired_at": "2026-10-22T08:54:35.906000+00:00",
+          "baseline_scene_ids": [
+            "S2B_MSIL2A_20260922T083559_N0513_R064_T37VDC_20260922T125356.SAFE",
+            "S2A_MSIL2A_20260922T085431_N0513_R107_T37VDC_20260922T115708.SAFE",
+            "S2B_MSIL2A_20260925T084619_N0513_R107_T37VDC_20260925T124845.SAFE",
+            "S2C_MSIL2A_20260927T083721_N0513_R064_T37VDC_20260927T114818.SAFE",
+            "S2C_MSIL2A_20260930T084751_N0513_R107_T37VDC_20260930T120605.SAFE",
+            "S2B_MSIL2A_20261002T083759_N0513_R064_T37VDC_20261002T125444.SAFE",
+            "S2A_MSIL2A_20261002T084731_N0513_R107_T37VDC_20261002T121504.SAFE",
+            "S2B_MSIL2A_20261005T084819_N0513_R107_T37VDC_20261005T110654.SAFE",
+            "S2C_MSIL2A_20261007T083831_N0513_R064_T37VDC_20261007T120702.SAFE",
+            "S2A_MSIL2A_20261009T083801_N0513_R064_T37VDC_20261009T121104.SAFE",
+            "S2C_MSIL2A_20261010T084901_N0513_R107_T37VDC_20261010T122306.SAFE",
+            "S2B_MSIL2A_20261012T083909_N0513_R064_T37VDC_20261012T125503.SAFE",
+            "S2A_MSIL2A_20261012T085431_N0513_R107_T37VDC_20261012T115407.SAFE",
+            "S2B_MSIL2A_20261015T084929_N0513_R107_T37VDC_20261015T111138.SAFE",
+            "S2C_MSIL2A_20261017T083941_N0513_R064_T37VDC_20261017T122409.SAFE"
+          ],
+          "valid_common_fraction": 0.0,
+          "status": "insufficient_data",
+          "changed_area_m2": 0
+        },
+        {
+          "scene_id": "S2B_MSIL2A_20261025T085039_N0513_R107_T37VDC_20261025T111523.SAFE",
+          "acquired_at": "2026-10-25T08:54:27.555000+00:00",
+          "baseline_scene_ids": [
+            "S2B_MSIL2A_20260922T083559_N0513_R064_T37VDC_20260922T125356.SAFE",
+            "S2A_MSIL2A_20260922T085431_N0513_R107_T37VDC_20260922T115708.SAFE",
+            "S2B_MSIL2A_20260925T084619_N0513_R107_T37VDC_20260925T124845.SAFE",
+            "S2C_MSIL2A_20260927T083721_N0513_R064_T37VDC_20260927T114818.SAFE",
+            "S2C_MSIL2A_20260930T084751_N0513_R107_T37VDC_20260930T120605.SAFE",
+            "S2B_MSIL2A_20261002T083759_N0513_R064_T37VDC_20261002T125444.SAFE",
+            "S2A_MSIL2A_20261002T084731_N0513_R107_T37VDC_20261002T121504.SAFE",
+            "S2B_MSIL2A_20261005T084819_N0513_R107_T37VDC_20261005T110654.SAFE",
+            "S2C_MSIL2A_20261007T083831_N0513_R064_T37VDC_20261007T120702.SAFE",
+            "S2A_MSIL2A_20261009T083801_N0513_R064_T37VDC_20261009T121104.SAFE",
+            "S2C_MSIL2A_20261010T084901_N0513_R107_T37VDC_20261010T122306.SAFE",
+            "S2B_MSIL2A_20261012T083909_N0513_R064_T37VDC_20261012T125503.SAFE",
+            "S2A_MSIL2A_20261012T085431_N0513_R107_T37VDC_20261012T115407.SAFE",
+            "S2B_MSIL2A_20261015T084929_N0513_R107_T37VDC_20261015T111138.SAFE",
+            "S2C_MSIL2A_20261017T083941_N0513_R064_T37VDC_20261017T122409.SAFE"
+          ],
+          "valid_common_fraction": 0.9992,
+          "status": "no_change_detected",
+          "changed_area_m2": 0
+        }
+      ],
+      "status": "usable"
+    }
+  ],
+  "errors": [],
+  "detection_ids": []
+}
