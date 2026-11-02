@@ -1,0 +1,480 @@
+{
+  "schema_version": 1,
+  "id": "cf6058c4820884c94ba9e206",
+  "label": "possible ground change",
+  "location": {
+    "id": "chkalovsky",
+    "name": "Chkalovsky",
+    "latitude": 55.8783,
+    "longitude": 38.061699,
+    "size_m": 1000,
+    "category": "Airfields"
+  },
+  "sensor": "s2",
+  "supported_by_sensors": [
+    "s2"
+  ],
+  "current": {
+    "provider": "cdse_monitor",
+    "collection": "sentinel-2-l2a",
+    "scene_id": "S2A_MSIL2A_20261029T084021_N0513_R064_T37VDC_20261029T121606.SAFE",
+    "sensor": "s2",
+    "acquired_at": "2026-10-29T08:44:36.085000Z",
+    "acquisition_end": null,
+    "platform": "sentinel-2a",
+    "orbit_direction": null,
+    "relative_orbit": null,
+    "instrument_mode": null,
+    "polarisations": [],
+    "cloud_cover": 65.44
+  },
+  "baseline_scenes": [
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2C_MSIL2A_20260930T084751_N0513_R107_T37VDC_20260930T120605.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-09-30T08:54:28.498000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2c",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 2.63
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2B_MSIL2A_20261002T083759_N0513_R064_T37VDC_20261002T125444.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-02T08:44:29.890000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2b",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 97.77
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2A_MSIL2A_20261002T084731_N0513_R107_T37VDC_20261002T121504.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-02T08:54:40.494000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2a",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 98.36
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2B_MSIL2A_20261005T084819_N0513_R107_T37VDC_20261005T110654.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-05T08:54:26.915000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2b",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 99.99
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2C_MSIL2A_20261007T083831_N0513_R064_T37VDC_20261007T120702.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-07T08:44:31.714000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2c",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 5.29
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2A_MSIL2A_20261009T083801_N0513_R064_T37VDC_20261009T121104.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-09T08:44:42.573000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2a",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 99.99
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2C_MSIL2A_20261010T084901_N0513_R107_T37VDC_20261010T122306.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-10T08:54:28.726000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2c",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 98.46
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2B_MSIL2A_20261012T083909_N0513_R064_T37VDC_20261012T125503.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-12T08:44:29.267000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2b",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 98.91
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2A_MSIL2A_20261012T085431_N0513_R107_T37VDC_20261012T115407.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-12T08:54:40.151000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2a",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 99.04
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2B_MSIL2A_20261015T084929_N0513_R107_T37VDC_20261015T111138.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-15T08:54:25.825000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2b",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 99.99
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2C_MSIL2A_20261017T083941_N0513_R064_T37VDC_20261017T122409.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-17T08:44:30.912000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2c",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 61.1
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2C_MSIL2A_20261020T085001_N0513_R107_T37VDC_20261020T122605.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-20T08:54:27.408000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2c",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 0.02
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2B_MSIL2A_20261022T084009_N0513_R064_T37VDC_20261022T122734.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-22T08:44:30.068000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2b",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 20.05
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2A_MSIL2A_20261022T084931_N0513_R107_T37VDC_20261022T121550.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-22T08:54:35.906000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2a",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 21.58
+    },
+    {
+      "provider": "cdse_monitor",
+      "collection": "sentinel-2-l2a",
+      "scene_id": "S2B_MSIL2A_20261025T085039_N0513_R107_T37VDC_20261025T111523.SAFE",
+      "sensor": "s2",
+      "acquired_at": "2026-10-25T08:54:27.555000Z",
+      "acquisition_end": null,
+      "platform": "sentinel-2b",
+      "orbit_direction": null,
+      "relative_orbit": null,
+      "instrument_mode": null,
+      "polarisations": [],
+      "cloud_cover": 0.05
+    }
+  ],
+  "dates": {
+    "baseline_start": "2026-09-28T00:00:00+00:00",
+    "target_start": "2026-10-26T00:00:00+00:00",
+    "end_exclusive": "2026-11-02T00:00:00+00:00"
+  },
+  "analysis_version": "ground-change-0.2.0+468e59100cfc",
+  "thresholds": {
+    "schema_version": 1,
+    "optical_threshold": 0.1,
+    "minimum_patch_cells": 9,
+    "minimum_baseline_observations": 2,
+    "minimum_common_coverage": 0.7,
+    "cloud_buffer_cells": 1,
+    "max_requests": 100,
+    "retry_attempts": 3,
+    "optical_preview_max": 0.4
+  },
+  "valid_common_fraction": 1.0,
+  "changed_area_m2": 8300,
+  "grid": {
+    "epsg": 32637,
+    "bbox": [
+      440797.42745972815,
+      6192432.77737105,
+      441797.42745972815,
+      6193432.77737105
+    ],
+    "width": 100,
+    "height": 100,
+    "resolution_m": 10
+  },
+  "patches": [
+    {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            440837.42745972815,
+            6192572.77737105
+          ],
+          [
+            440837.42745972815,
+            6192542.77737105
+          ],
+          [
+            440827.42745972815,
+            6192542.77737105
+          ],
+          [
+            440827.42745972815,
+            6192552.77737105
+          ],
+          [
+            440817.42745972815,
+            6192552.77737105
+          ],
+          [
+            440817.42745972815,
+            6192542.77737105
+          ],
+          [
+            440797.42745972815,
+            6192542.77737105
+          ],
+          [
+            440797.42745972815,
+            6192472.77737105
+          ],
+          [
+            440807.42745972815,
+            6192472.77737105
+          ],
+          [
+            440807.42745972815,
+            6192462.77737105
+          ],
+          [
+            440817.42745972815,
+            6192462.77737105
+          ],
+          [
+            440817.42745972815,
+            6192472.77737105
+          ],
+          [
+            440827.42745972815,
+            6192472.77737105
+          ],
+          [
+            440827.42745972815,
+            6192482.77737105
+          ],
+          [
+            440837.42745972815,
+            6192482.77737105
+          ],
+          [
+            440837.42745972815,
+            6192472.77737105
+          ],
+          [
+            440857.42745972815,
+            6192472.77737105
+          ],
+          [
+            440857.42745972815,
+            6192482.77737105
+          ],
+          [
+            440867.42745972815,
+            6192482.77737105
+          ],
+          [
+            440867.42745972815,
+            6192492.77737105
+          ],
+          [
+            440877.42745972815,
+            6192492.77737105
+          ],
+          [
+            440877.42745972815,
+            6192512.77737105
+          ],
+          [
+            440887.42745972815,
+            6192512.77737105
+          ],
+          [
+            440887.42745972815,
+            6192502.77737105
+          ],
+          [
+            440897.42745972815,
+            6192502.77737105
+          ],
+          [
+            440897.42745972815,
+            6192512.77737105
+          ],
+          [
+            440907.42745972815,
+            6192512.77737105
+          ],
+          [
+            440907.42745972815,
+            6192522.77737105
+          ],
+          [
+            440917.42745972815,
+            6192522.77737105
+          ],
+          [
+            440917.42745972815,
+            6192512.77737105
+          ],
+          [
+            440927.42745972815,
+            6192512.77737105
+          ],
+          [
+            440927.42745972815,
+            6192542.77737105
+          ],
+          [
+            440917.42745972815,
+            6192542.77737105
+          ],
+          [
+            440917.42745972815,
+            6192552.77737105
+          ],
+          [
+            440897.42745972815,
+            6192552.77737105
+          ],
+          [
+            440897.42745972815,
+            6192562.77737105
+          ],
+          [
+            440887.42745972815,
+            6192562.77737105
+          ],
+          [
+            440887.42745972815,
+            6192572.77737105
+          ],
+          [
+            440877.42745972815,
+            6192572.77737105
+          ],
+          [
+            440877.42745972815,
+            6192562.77737105
+          ],
+          [
+            440867.42745972815,
+            6192562.77737105
+          ],
+          [
+            440867.42745972815,
+            6192542.77737105
+          ],
+          [
+            440847.42745972815,
+            6192542.77737105
+          ],
+          [
+            440847.42745972815,
+            6192552.77737105
+          ],
+          [
+            440857.42745972815,
+            6192552.77737105
+          ],
+          [
+            440857.42745972815,
+            6192572.77737105
+          ],
+          [
+            440837.42745972815,
+            6192572.77737105
+          ]
+        ]
+      ]
+    }
+  ],
+  "patch_crs": "EPSG:32637",
+  "baseline_preview": "pixelwise median composite of valid baseline observations",
+  "previews": {
+    "before": "previews/cf6058c4820884c94ba9e206-before.png",
+    "after": "previews/cf6058c4820884c94ba9e206-after.png",
+    "change": "previews/cf6058c4820884c94ba9e206-change.png"
+  },
+  "notice": "Possible ground change only. Weather, moisture, vegetation, snow and image misalignment can produce changes. No cause, people/vehicle count or confidence percentage is inferred. A 10 m grid is not guaranteed 10 m resolving power. Thresholds are prototypes, not validated detection limits.",
+  "attribution": "Contains modified Copernicus Sentinel data. Processed through Copernicus Data Space Sentinel Hub."
+}
